@@ -1,7 +1,6 @@
 package eu.scapeproject.fcrepo.integration;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,7 +16,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jgroups.util.UUID;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -52,25 +50,24 @@ public class PlanIT {
         final String planUri = SCAPE_URL + "/plan/" + planId;
         final File f = new File(this.getClass().getClassLoader().getResource("test-plan.xml").getFile());
 
-        String uri = putPlan(planId, new FileInputStream(f), f.length());
-        assertNotNull(uri);
-        assertEquals(planUri, uri);
-        
-        LOG.info("fetching plan from URI " + FEDORA_URL + "/objects/scape/plans/" + planId);
+        putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
+
+        /* check that the plan exists in fedora */
         HttpGet get = new HttpGet(FEDORA_URL + "/objects/scape/plans/" + planId);
         HttpResponse resp = this.client.execute(get);
-        assertEquals(200, resp.getStatusLine().getStatusCode());
         System.out.println(EntityUtils.toString(resp.getEntity()));
+        assertEquals(200,resp.getStatusLine().getStatusCode());
+        get.releaseConnection();
+
     }
 
     @Test
-    @Ignore
     public void testDeployAndRetrievePlan() throws Exception {
         final String planId = UUID.randomUUID().toString();
         final String planUri = SCAPE_URL + "/plan/" + planId;
         final File f = new File(this.getClass().getClassLoader().getResource("test-plan.xml").getFile());
 
-        putPlan(planId, new FileInputStream(f), f.length());
+        putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
 
         /* check that the plan can be retrieved */
         LOG.debug("retrieving plan from " + planUri);
@@ -85,13 +82,12 @@ public class PlanIT {
     }
 
     @Test
-    @Ignore
-    public void testDeployAndRetreiveExecState() throws Exception {
+    public void testDeployAndRetrieveExecState() throws Exception {
         final String planId = UUID.randomUUID().toString();
         final String planUri = SCAPE_URL + "/plan/" + planId;
         final File f = new File(this.getClass().getClassLoader().getResource("test-plan.xml").getFile());
 
-        putPlan(planId, new FileInputStream(f), f.length());
+        putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
 
         final HttpGet get = new HttpGet(SCAPE_URL + "/plan-execution-state/" + planId);
         HttpResponse resp = this.client.execute(get);
@@ -103,14 +99,12 @@ public class PlanIT {
         get.releaseConnection();
     }
 
-    private String putPlan(String planId, InputStream src, long length) throws IOException {
+    private void putPlanAndAssertCreated(String planId, InputStream src, long length) throws IOException {
         /* create and ingest a test plan */
         HttpPut put = new HttpPut(SCAPE_URL + "/plan/" + planId);
         put.setEntity(new InputStreamEntity(src, length));
         HttpResponse resp = this.client.execute(put);
         assertEquals(201, resp.getStatusLine().getStatusCode());
-        String uri = EntityUtils.toString(resp.getEntity());
         put.releaseConnection();
-        return uri;
     }
 }

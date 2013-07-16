@@ -9,7 +9,7 @@
     
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>classpath:integration-tests/repo.xml, classpath:integration-tests/rest.xml, classpath:integration-tests/eventing.xml</param-value>
+        <param-value>classpath:integration-tests/repo.xml, classpath:integration-tests/rest.xml, classpath:integration-tests/eventing.xml, classpath:integration-tests/scape.xml</param-value>
     </context-param>
     
     <listener>
