@@ -1,17 +1,23 @@
+
 package eu.scapeproject.fcrepo.integration;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jgroups.util.UUID;
@@ -23,14 +29,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import eu.scapeproject.model.plan.PlanExecutionState;
 import eu.scapeproject.model.plan.PlanExecutionState.ExecutionState;
 import eu.scapeproject.model.plan.PlanExecutionStateCollection;
 import eu.scapeproject.util.ScapeMarshaller;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/integration-tests/test-container.xml" })
+@ContextConfiguration(locations = {"/integration-tests/test-container.xml"})
 public class PlanIT {
+
     private static final String SCAPE_URL = "http://localhost:8080/rest/scape";
+
     private static final String FEDORA_URL = "http://localhost:8080/rest/";
 
     private final DefaultHttpClient client = new DefaultHttpClient();
@@ -48,15 +57,17 @@ public class PlanIT {
     public void testDeployPlan() throws Exception {
         final String planId = UUID.randomUUID().toString();
         final String planUri = SCAPE_URL + "/plan/" + planId;
-        final File f = new File(this.getClass().getClassLoader().getResource("test-plan.xml").getFile());
+        final File f =
+                new File(this.getClass().getClassLoader().getResource(
+                        "test-plan.xml").getFile());
 
         putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
 
         /* check that the plan exists in fedora */
-        HttpGet get = new HttpGet(FEDORA_URL + "/objects/scape/plans/" + planId);
+        HttpGet get =
+                new HttpGet(FEDORA_URL + "/objects/scape/plans/" + planId);
         HttpResponse resp = this.client.execute(get);
-        System.out.println(EntityUtils.toString(resp.getEntity()));
-        assertEquals(200,resp.getStatusLine().getStatusCode());
+        assertEquals(200, resp.getStatusLine().getStatusCode());
         get.releaseConnection();
 
     }
@@ -65,7 +76,9 @@ public class PlanIT {
     public void testDeployAndRetrievePlan() throws Exception {
         final String planId = UUID.randomUUID().toString();
         final String planUri = SCAPE_URL + "/plan/" + planId;
-        final File f = new File(this.getClass().getClassLoader().getResource("test-plan.xml").getFile());
+        final File f =
+                new File(this.getClass().getClassLoader().getResource(
+                        "test-plan.xml").getFile());
 
         putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
 
@@ -85,21 +98,68 @@ public class PlanIT {
     public void testDeployAndRetrieveExecState() throws Exception {
         final String planId = UUID.randomUUID().toString();
         final String planUri = SCAPE_URL + "/plan/" + planId;
-        final File f = new File(this.getClass().getClassLoader().getResource("test-plan.xml").getFile());
+        final File f =
+                new File(this.getClass().getClassLoader().getResource(
+                        "test-plan.xml").getFile());
 
         putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
 
-        final HttpGet get = new HttpGet(SCAPE_URL + "/plan-execution-state/" + planId);
+        final HttpGet get =
+                new HttpGet(SCAPE_URL + "/plan-execution-state/" + planId);
         HttpResponse resp = this.client.execute(get);
-        PlanExecutionStateCollection coll = ScapeMarshaller.newInstance().deserialize(PlanExecutionStateCollection.class,
-                resp.getEntity().getContent());
+        PlanExecutionStateCollection coll =
+                ScapeMarshaller.newInstance().deserialize(
+                        PlanExecutionStateCollection.class,
+                        resp.getEntity().getContent());
         assertEquals(200, resp.getStatusLine().getStatusCode());
         assertEquals(1, coll.executionStates.size());
-        assertEquals(ExecutionState.ENABLED, coll.getExecutionStates().get(0).getState());
+        assertEquals(ExecutionState.ENABLED, coll.getExecutionStates().get(0)
+                .getState());
         get.releaseConnection();
     }
 
-    private void putPlanAndAssertCreated(String planId, InputStream src, long length) throws IOException {
+    @Test
+    public void testDeployAndAddExecState() throws Exception {
+        final String planId = UUID.randomUUID().toString();
+        final String planUri = SCAPE_URL + "/plan/" + planId;
+        final File f =
+                new File(this.getClass().getClassLoader().getResource(
+                        "test-plan.xml").getFile());
+
+        putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
+
+        PlanExecutionState state =
+                new PlanExecutionState(new Date(),
+                        ExecutionState.EXECUTION_FAIL);
+        HttpPost post =
+                new HttpPost(SCAPE_URL + "/plan-execution-state/" + planId);
+        ByteArrayOutputStream sink = new ByteArrayOutputStream();
+        ScapeMarshaller.newInstance().serialize(state, sink);
+        post.setEntity(new StringEntity(new String(sink.toByteArray()),
+                ContentType.TEXT_XML));
+        HttpResponse resp = this.client.execute(post);
+        assertEquals(201, resp.getStatusLine().getStatusCode());
+        post.releaseConnection();
+
+        HttpGet get =
+                new HttpGet(SCAPE_URL + "/plan-execution-state/" + planId);
+        resp = this.client.execute(get);
+        assertEquals(200, resp.getStatusLine().getStatusCode());
+        PlanExecutionStateCollection states =
+                (PlanExecutionStateCollection) marshaller.deserialize(resp
+                        .getEntity().getContent());
+        get.releaseConnection();
+        assertEquals(2, states.executionStates.size());
+        assertEquals(ExecutionState.ENABLED, states.executionStates.get(0)
+                .getState());
+        assertEquals(ExecutionState.EXECUTION_FAIL, states.executionStates.get(
+                1).getState());
+        assertEquals(state.getTimeStamp(), states.executionStates.get(1)
+                .getTimeStamp());
+    }
+
+    private void putPlanAndAssertCreated(String planId, InputStream src,
+            long length) throws IOException {
         /* create and ingest a test plan */
         HttpPut put = new HttpPut(SCAPE_URL + "/plan/" + planId);
         put.setEntity(new InputStreamEntity(src, length));

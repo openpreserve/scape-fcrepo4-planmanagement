@@ -5,14 +5,19 @@
 package eu.scape_project.resource;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
@@ -85,7 +90,6 @@ public class PlanExecutionStates {
         final Dataset data = plan.getPropertiesDataset();
         final Model rdfModel = SerializationUtils.unifyDatasetModel(data);
         String subject = "info:fedora" + planUri;
-        rdfModel.write(System.out);
         final StmtIterator execs =
                 rdfModel.listStatements(
                         rdfModel.getResource(subject),
@@ -95,7 +99,9 @@ public class PlanExecutionStates {
         /* create the response from the data saved in fcrepo */
         List<PlanExecutionState> states = new ArrayList<>();
         while (execs.hasNext()) {
-            final Resource res = rdfModel.createResource(execs.next().getObject().asLiteral().getString());
+            final Resource res =
+                    rdfModel.createResource(execs.next().getObject()
+                            .asLiteral().getString());
             final String state =
                     rdfModel.listStatements(
                             res,
@@ -111,6 +117,7 @@ public class PlanExecutionStates {
             states.add(new PlanExecutionState(new Date(timestamp),
                     ExecutionState.valueOf(state)));
         }
+        Collections.sort(states);
         final PlanExecutionStateCollection coll =
                 new PlanExecutionStateCollection(planUri, states);
 
@@ -119,13 +126,43 @@ public class PlanExecutionStates {
             @Override
             public void write(OutputStream output) throws IOException,
                     WebApplicationException {
-                try{
+                try {
                     marshaller.serialize(coll, output);
-                }catch(JAXBException e){
+                } catch (JAXBException e) {
                     throw new IOException(e);
                 }
             }
         }).build();
+    }
+
+    @POST
+    @Path("{id}")
+    public Response addExecutionState(@PathParam("id")
+    final String planId, InputStream src) throws RepositoryException,JAXBException {
+
+        final PlanExecutionState state = marshaller.deserialize(PlanExecutionState.class, src);
+        final String planUri = "/" + Plans.PLAN_FOLDER + planId;
+        /* fetch the plan from the repository */
+        final FedoraObject plan =
+                this.objectService.getObject(this.session, planUri);
+
+        final FedoraObject execState = this.objectService.createObject(this.session, planUri + "/" + UUID.randomUUID());
+        StringBuilder sparql = new StringBuilder();
+        sparql.append("INSERT {<info:fedora/" + execState.getPath() +
+                "> <http://scapeproject.eu/model#hasExecutionState> \"" + state.getState() + "\"} WHERE {};");
+        sparql.append("INSERT {<info:fedora/" + execState.getPath() +
+                "> <http://scapeproject.eu/model#hasTimeStamp> \"" + state.getTimeStamp().getTime() + "\"} WHERE {};");
+
+        /* add the exec state to the parent */
+        sparql.append("INSERT {<info:fedora/" + plan.getPath() +
+                "> <http://scapeproject.eu/model#hasType> \"PLAN\"} WHERE {};");
+        sparql.append("INSERT {<info:fedora" + plan.getPath() +
+                "> <http://scapeproject.eu/model#hasExecState> <info:fedora" +
+                execState.getPath() + ">} WHERE {};");
+
+        plan.updatePropertiesDataset(sparql.toString());
+        this.session.save();
+        return Response.created(URI.create(planUri)).build();
     }
 
 }
