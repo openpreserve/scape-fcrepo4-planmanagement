@@ -2,6 +2,7 @@
 package eu.scapeproject.fcrepo.integration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -186,6 +187,16 @@ public class PlanIT {
                 2).getState());
         assertEquals(ExecutionState.EXECUTION_SUCCESS, states.executionStates
                 .get(3).getState());
+    }
+
+    @Test
+    public void testReserveIdentifier() throws Exception {
+        HttpGet get = new HttpGet(SCAPE_URL + "/plan-id/reserve");
+        HttpResponse resp = this.client.execute(get);
+        assertEquals(200, resp.getStatusLine().getStatusCode());
+        String id = EntityUtils.toString(resp.getEntity());
+        assertTrue(0 < id.length());
+        get.releaseConnection();
     }
 
     private void putPlanLifecycleState(String planId, String state)
