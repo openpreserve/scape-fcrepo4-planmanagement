@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 
+import javax.xml.bind.JAXBException;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -83,7 +85,6 @@ public class PlanIT {
         putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
 
         /* check that the plan can be retrieved */
-        LOG.debug("retrieving plan from " + planUri);
         HttpGet get = new HttpGet(planUri);
         HttpResponse resp = this.client.execute(get);
         assertEquals(200, resp.getStatusLine().getStatusCode());
@@ -91,6 +92,43 @@ public class PlanIT {
         /* check that the xml is the same as deployed */
         final String planXml = EntityUtils.toString(resp.getEntity());
         assertEquals(IOUtils.toString(new FileInputStream(f)), planXml);
+        get.releaseConnection();
+    }
+
+    @Test
+    public void testDeployAndRetrieveLifecycleState() throws Exception {
+        final String planId = UUID.randomUUID().toString();
+        final String planUri = SCAPE_URL + "/plan/" + planId;
+        final File f =
+                new File(this.getClass().getClassLoader().getResource(
+                        "test-plan.xml").getFile());
+
+        putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
+
+        final HttpGet get = new HttpGet(SCAPE_URL + "/plan-state/" + planId);
+        HttpResponse resp = this.client.execute(get);
+        String state = EntityUtils.toString(resp.getEntity());
+        assertEquals(200, resp.getStatusLine().getStatusCode());
+        assertEquals("ENABLED", state);
+        get.releaseConnection();
+    }
+
+    @Test
+    public void testDeployAndUpdateLifecycleState() throws Exception {
+        final String planId = UUID.randomUUID().toString();
+        final String planUri = SCAPE_URL + "/plan/" + planId;
+        final File f =
+                new File(this.getClass().getClassLoader().getResource(
+                        "test-plan.xml").getFile());
+
+        putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
+        putPlanLifecycleState(planId, "DISABLED");
+
+        final HttpGet get = new HttpGet(SCAPE_URL + "/plan-state/" + planId);
+        HttpResponse resp = this.client.execute(get);
+        String state = EntityUtils.toString(resp.getEntity());
+        assertEquals(200, resp.getStatusLine().getStatusCode());
+        assertEquals("DISABLED", state);
         get.releaseConnection();
     }
 
@@ -112,9 +150,7 @@ public class PlanIT {
                         PlanExecutionStateCollection.class,
                         resp.getEntity().getContent());
         assertEquals(200, resp.getStatusLine().getStatusCode());
-        assertEquals(1, coll.executionStates.size());
-        assertEquals(ExecutionState.ENABLED, coll.getExecutionStates().get(0)
-                .getState());
+        assertEquals(0, coll.executionStates.size());
         get.releaseConnection();
     }
 
@@ -128,9 +164,44 @@ public class PlanIT {
 
         putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
 
+        putPlanExecutionState(planId, ExecutionState.EXECUTION_SUCCESS);
+        putPlanExecutionState(planId, ExecutionState.EXECUTION_SUCCESS);
+        putPlanExecutionState(planId, ExecutionState.EXECUTION_FAIL);
+        putPlanExecutionState(planId, ExecutionState.EXECUTION_SUCCESS);
+
+        HttpGet get =
+                new HttpGet(SCAPE_URL + "/plan-execution-state/" + planId);
+        HttpResponse resp = this.client.execute(get);
+        assertEquals(200, resp.getStatusLine().getStatusCode());
+        PlanExecutionStateCollection states =
+                (PlanExecutionStateCollection) marshaller.deserialize(resp
+                        .getEntity().getContent());
+        get.releaseConnection();
+        assertEquals(4, states.executionStates.size());
+        assertEquals(ExecutionState.EXECUTION_SUCCESS, states.executionStates
+                .get(0).getState());
+        assertEquals(ExecutionState.EXECUTION_SUCCESS, states.executionStates
+                .get(1).getState());
+        assertEquals(ExecutionState.EXECUTION_FAIL, states.executionStates.get(
+                2).getState());
+        assertEquals(ExecutionState.EXECUTION_SUCCESS, states.executionStates
+                .get(3).getState());
+    }
+
+    private void putPlanLifecycleState(String planId, String state)
+            throws IOException {
+        HttpPut put =
+                new HttpPut(SCAPE_URL + "/plan-state/" + planId + "/" + state);
+        HttpResponse resp = this.client.execute(put);
+        assertEquals(200, resp.getStatusLine().getStatusCode());
+        put.releaseConnection();
+    }
+
+    private void putPlanExecutionState(String planId,
+            ExecutionState executionState) throws JAXBException, IOException {
+
         PlanExecutionState state =
-                new PlanExecutionState(new Date(),
-                        ExecutionState.EXECUTION_FAIL);
+                new PlanExecutionState(new Date(), executionState);
         HttpPost post =
                 new HttpPost(SCAPE_URL + "/plan-execution-state/" + planId);
         ByteArrayOutputStream sink = new ByteArrayOutputStream();
@@ -140,22 +211,6 @@ public class PlanIT {
         HttpResponse resp = this.client.execute(post);
         assertEquals(201, resp.getStatusLine().getStatusCode());
         post.releaseConnection();
-
-        HttpGet get =
-                new HttpGet(SCAPE_URL + "/plan-execution-state/" + planId);
-        resp = this.client.execute(get);
-        assertEquals(200, resp.getStatusLine().getStatusCode());
-        PlanExecutionStateCollection states =
-                (PlanExecutionStateCollection) marshaller.deserialize(resp
-                        .getEntity().getContent());
-        get.releaseConnection();
-        assertEquals(2, states.executionStates.size());
-        assertEquals(ExecutionState.ENABLED, states.executionStates.get(0)
-                .getState());
-        assertEquals(ExecutionState.EXECUTION_FAIL, states.executionStates.get(
-                1).getState());
-        assertEquals(state.getTimeStamp(), states.executionStates.get(1)
-                .getTimeStamp());
     }
 
     private void putPlanAndAssertCreated(String planId, InputStream src,

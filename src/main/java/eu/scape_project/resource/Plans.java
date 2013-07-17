@@ -3,8 +3,6 @@ package eu.scape_project.resource;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.UUID;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -63,24 +61,14 @@ public class Plans {
         final FedoraObject plan =
                 objectService.createObject(this.session, path);
 
-        /* create a child object to hold the exec state */
-        final FedoraObject execState =
-                objectService.createObject(session, path + "/" +
-                        UUID.randomUUID());
-
         /* add the properties to the RDF graph of the exec state object */
         StringBuilder sparql = new StringBuilder();
-        sparql.append("INSERT {<info:fedora/" + execState.getPath() +
-                "> <http://scapeproject.eu/model#hasExecutionState> \"ENABLED\"} WHERE {};");
-        sparql.append("INSERT {<info:fedora/" + execState.getPath() +
-                "> <http://scapeproject.eu/model#hasTimeStamp> \"" + new Date().getTime() + "\"} WHERE {};");
 
         /* add the exec state to the parent */
         sparql.append("INSERT {<info:fedora/" + plan.getPath() +
                 "> <http://scapeproject.eu/model#hasType> \"PLAN\"} WHERE {};");
-        sparql.append("INSERT {<info:fedora" + plan.getPath() +
-                "> <http://scapeproject.eu/model#hasExecState> <info:fedora" +
-                execState.getPath() + ">} WHERE {};");
+        sparql.append("INSERT {<info:fedora/" + plan.getPath() +
+                "> <http://scapeproject.eu/model#hasLifecycleState> \"ENABLED\"} WHERE {};");
 
         /* execute the sparql update */
         plan.updatePropertiesDataset(sparql.toString());
