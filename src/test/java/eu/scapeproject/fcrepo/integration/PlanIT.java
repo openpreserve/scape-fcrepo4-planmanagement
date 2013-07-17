@@ -199,6 +199,25 @@ public class PlanIT {
         get.releaseConnection();
     }
 
+    @Test
+    public void testSearchPlans() throws Exception {
+        final File f =
+                new File(this.getClass().getClassLoader().getResource(
+                        "test-plan.xml").getFile());
+
+        putPlanAndAssertCreated(UUID.randomUUID().toString(), new FileInputStream(f), f.length());
+        putPlanAndAssertCreated(UUID.randomUUID().toString(), new FileInputStream(f), f.length());
+        putPlanAndAssertCreated(UUID.randomUUID().toString(), new FileInputStream(f), f.length());
+
+
+        HttpGet get = new HttpGet(SCAPE_URL + "/plan/sru?version=1&operation=searchRetrieve&query=*");
+        HttpResponse resp = this.client.execute(get);
+        assertEquals(200, resp.getStatusLine().getStatusCode());
+        String id = EntityUtils.toString(resp.getEntity());
+        assertTrue(0 < id.length());
+        get.releaseConnection();
+    }
+
     private void putPlanLifecycleState(String planId, String state)
             throws IOException {
         HttpPut put =
