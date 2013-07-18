@@ -70,7 +70,7 @@ Update the configuration of the web application in order to have Fedora 4 discov
 </context-param>
 ```
 
-*  Add "eu.scape_project.resource" to the init parameter in order for Jersey to discover the new Endpoint
+*  Add "eu.scape_project.resource" to the init parameter in order for Jersey to discover the new endpoint
 
 ```xml
 <init-param>
