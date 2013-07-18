@@ -24,7 +24,7 @@ $ mvn clean install
 Deploy the web application on a servlet container e.g. Apache Tomcat by copying the war file to the servlet container's webapp directory and start Fedora 4 so that the WAR file gets exploded.
 
 ```bash
-$ cp fcrepo4/fcrepo-webapp/fcrepo-weabpp-{VERSION}.war {TOMCAT_HOME}/webapps/fcrepo.war
+$ cp fcrepo4/fcrepo-webapp/fcrepo-webapp-{VERSION}.war {TOMCAT_HOME}/webapps/fcrepo.war
 $ {TOMCAT_HOME}/bin/catalina.sh run
 ```
 
