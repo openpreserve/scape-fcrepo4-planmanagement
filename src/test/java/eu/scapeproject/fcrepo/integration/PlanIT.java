@@ -62,7 +62,7 @@ public class PlanIT {
         final String planUri = SCAPE_URL + "/plan/" + planId;
         final File f =
                 new File(this.getClass().getClassLoader().getResource(
-                        "test-plan.xml").getFile());
+                        "plato-plan.xml").getFile());
 
         putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
 
@@ -81,7 +81,7 @@ public class PlanIT {
         final String planUri = SCAPE_URL + "/plan/" + planId;
         final File f =
                 new File(this.getClass().getClassLoader().getResource(
-                        "test-plan.xml").getFile());
+                        "plato-plan.xml").getFile());
 
         putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
 
@@ -102,7 +102,7 @@ public class PlanIT {
         final String planUri = SCAPE_URL + "/plan/" + planId;
         final File f =
                 new File(this.getClass().getClassLoader().getResource(
-                        "test-plan.xml").getFile());
+                        "plato-plan.xml").getFile());
 
         putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
 
@@ -120,7 +120,7 @@ public class PlanIT {
         final String planUri = SCAPE_URL + "/plan/" + planId;
         final File f =
                 new File(this.getClass().getClassLoader().getResource(
-                        "test-plan.xml").getFile());
+                        "plato-plan.xml").getFile());
 
         putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
         putPlanLifecycleState(planId, "DISABLED");
@@ -139,7 +139,7 @@ public class PlanIT {
         final String planUri = SCAPE_URL + "/plan/" + planId;
         final File f =
                 new File(this.getClass().getClassLoader().getResource(
-                        "test-plan.xml").getFile());
+                        "plato-plan.xml").getFile());
 
         putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
 
@@ -161,7 +161,7 @@ public class PlanIT {
         final String planUri = SCAPE_URL + "/plan/" + planId;
         final File f =
                 new File(this.getClass().getClassLoader().getResource(
-                        "test-plan.xml").getFile());
+                        "plato-plan.xml").getFile());
 
         putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
 
@@ -203,7 +203,7 @@ public class PlanIT {
     public void testSearchPlans() throws Exception {
         final File f =
                 new File(this.getClass().getClassLoader().getResource(
-                        "test-plan.xml").getFile());
+                        "plato-plan.xml").getFile());
 
         putPlanAndAssertCreated(UUID.randomUUID().toString(), new FileInputStream(f), f.length());
         putPlanAndAssertCreated(UUID.randomUUID().toString(), new FileInputStream(f), f.length());
@@ -213,8 +213,9 @@ public class PlanIT {
         HttpGet get = new HttpGet(SCAPE_URL + "/plan/sru?version=1&operation=searchRetrieve&query=*");
         HttpResponse resp = this.client.execute(get);
         assertEquals(200, resp.getStatusLine().getStatusCode());
-        String id = EntityUtils.toString(resp.getEntity());
-        assertTrue(0 < id.length());
+        String xml = EntityUtils.toString(resp.getEntity(),"UTF-8");
+        System.out.println(xml);
+        assertTrue(0 < xml.length());
         get.releaseConnection();
     }
 
