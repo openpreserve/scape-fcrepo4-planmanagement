@@ -1,5 +1,5 @@
-SCAPE Plan Management API implementation
-========================================
+SCAPE Plan Management on Fedora 4 
+=================================
 
 This is the implementation of the SCAPE Plan Management API as described by the spec available at 
 https://github.com/openplanets/scape-apis
