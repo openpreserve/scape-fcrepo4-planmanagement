@@ -15,14 +15,6 @@ OR download a prepackaged WAR from https://wiki.duraspace.org/display/FF/Downloa
 ```bash
 $ git clone https://github.com/futures/fcrepo4.git
 $ cd fcrepo4
-$ mvn install
-$ cd fcrepo-webapp
-$ MAVEN_OPTS="-Xmx512m" mvn jetty:run
-```
-
-```bash
-$ git clone https://github.com/futures/fcrepo4.git
-$ cd fcrepo4
 $ mvn clean install
 ```
 
