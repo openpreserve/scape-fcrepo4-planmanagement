@@ -214,7 +214,6 @@ public class PlanIT {
         HttpResponse resp = this.client.execute(get);
         assertEquals(200, resp.getStatusLine().getStatusCode());
         String xml = EntityUtils.toString(resp.getEntity(),"UTF-8");
-        System.out.println(xml);
         assertTrue(0 < xml.length());
         get.releaseConnection();
     }

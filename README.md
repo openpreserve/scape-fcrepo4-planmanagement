@@ -66,7 +66,7 @@ Update the configuration of the web application in order to have Fedora 4 discov
 ```xml
 <context-param>
 	<param-name>contextConfigLocation</param-name>
-	<param-value>WEB-INF/classes/spring/.xml classpath:scape.xml</param-value>
+	<param-value>WEB-INF/classes/spring/.xml classpath:scape-plans.xml</param-value>
 </context-param>
 ```
 
