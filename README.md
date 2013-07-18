@@ -40,7 +40,7 @@ $ mvn clean install
 
 #### 4. Create the Plan Management JAR
 
-Checkout and build/package the plan Management api from https://github.com/openplanets/scape-fcrepo4-planManagement
+Checkout and build/package the plan Management api from https://github.com/openplanets/scape-fcrepo4-planmanagement
 
 ```bash
 $ git clone https://github.com/openplanets/scape-fcrepo4-planmanagement.git
