@@ -11,10 +11,11 @@ Installation
 1. Get Fedora 4
 Checkout and build Fedora 4 from Github at https://github.com/futures/fcrepo4
 OR download a prepackaged WAR from https://wiki.duraspace.org/display/FF/Downloads
+```bash
     git clone https://github.com/futures/fcrepo4.git
     cd fcrepo4
     mvn clean install
-
+```
 2. Deploy Fedora 4
 Deploy the web application on a servlet container e.g. Apache Tomcat by copying the war file to the servlet container's webapp directory and start Fedora 4 so that the WAR file gets exploded.
 
