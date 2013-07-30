@@ -1,0 +1,13 @@
+language: java
+jdk:
+  - oraclejdk7
+  - openjdk7
+before_install:
+  - git clone https://github.com/futures/fcrepo4.git
+  - cd fcrepo4
+  - mvn -q clean install -DskipTests=true
+  - cd ..
+  - git clone https://github.com/openplanets/scape-platform-datamodel.git
+  - cd scape-platform-datamodel
+  - mvn -q clean install -DskipTests=true
+  - cd ..
