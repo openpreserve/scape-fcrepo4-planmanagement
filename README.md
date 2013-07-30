@@ -10,12 +10,13 @@ Installation
 
 #### 1. Get Fedora 4
 
-Checkout and build Fedora 4 from Github at https://github.com/futures/fcrepo4
+Checkout and build the tagged version of Fedora 4 from Github at https://github.com/futures/fcrepo4
 OR download a prepackaged WAR from https://wiki.duraspace.org/display/FF/Downloads
 
 ```bash
 $ git clone https://github.com/futures/fcrepo4.git
 $ cd fcrepo4
+$ git checkout fcrepo-4.0.0-scape
 $ mvn clean install
 ```
 
