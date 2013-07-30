@@ -70,7 +70,7 @@ $ cp scape-platform-datamodel/target/scape-platform-datamodel-{VERSION}.jar {TOM
 
 Update the configuration of the web application in order to have Fedora 4 discover the new HTTP endpoints at /scape/plans
 
-*  Add "classpath:scape.xml" to the contextConfigLocation:
+*  Add "classpath:scape-plans.xml" to the contextConfigLocation:
 
 ```xml
 <context-param>
