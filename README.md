@@ -12,6 +12,7 @@ https://docs.google.com/file/d/0B5nd_qlYdcqyVXFzZ1B4dmdzN28/edit?usp=sharing
 
 Manual Installation
 -------------------
+_If you're not sure you want to do this by yourself you can download a prepacked WAR file from_ https://docs.google.com/file/d/0B5nd_qlYdcqyVXFzZ1B4dmdzN28/edit?usp=sharing
 Since Fedora 4 is in active development and therefore the APIs used are not yet finalized, this project might not run on an arbitrary version of Fedora 4.
 A version fcrepo-4.0.0-scape has therefore been tagged which is compatible with the current implementations:
 https://github.com/futures/fcrepo4/tree/fcrepo-4.0.0-scape
