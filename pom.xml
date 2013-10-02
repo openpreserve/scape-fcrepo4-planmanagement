@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>eu.scape_project.fcrepo4</groupId>
+  <groupId>eu.scape-project.fcrepo4</groupId>
   <artifactId>scape-fcrepo4-planmanagement</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>fcrepo4-plan-management</name>
@@ -29,7 +29,7 @@
       <version>2.4</version>
     </dependency>
     <dependency>
-      <groupId>eu.scapeproject.model</groupId>
+      <groupId>eu.scape-project.model</groupId>
       <artifactId>scape-platform-datamodel</artifactId>
       <version>0.1.3-SNAPSHOT</version>
     </dependency>

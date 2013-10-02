@@ -5,6 +5,7 @@ jdk:
 before_install:
   - git clone https://github.com/futures/fcrepo4.git
   - cd fcrepo4
+  - git checkout fcrepo-4.0.0-scape
   - mvn -q clean install -DskipTests=true
   - cd ..
   - git clone https://github.com/openplanets/scape-platform-datamodel.git
