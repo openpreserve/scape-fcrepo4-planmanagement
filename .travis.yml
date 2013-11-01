@@ -8,7 +8,3 @@ before_install:
   - git checkout fcrepo-4.0.0-scape
   - mvn -q clean install -DskipTests=true
   - cd ..
-  - git clone https://github.com/openplanets/scape-platform-datamodel.git
-  - cd scape-platform-datamodel
-  - mvn -q clean install -DskipTests=true
-  - cd ..
