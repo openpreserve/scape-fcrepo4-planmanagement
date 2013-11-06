@@ -37,12 +37,12 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBException;
 
-import org.fcrepo.FedoraObject;
-import org.fcrepo.rdf.SerializationUtils;
-import org.fcrepo.services.DatastreamService;
-import org.fcrepo.services.NodeService;
-import org.fcrepo.services.ObjectService;
-import org.fcrepo.session.InjectedSession;
+import org.fcrepo.kernel.FedoraObject;
+import org.fcrepo.kernel.rdf.SerializationUtils;
+import org.fcrepo.kernel.services.DatastreamService;
+import org.fcrepo.kernel.services.NodeService;
+import org.fcrepo.kernel.services.ObjectService;
+import org.fcrepo.http.commons.session.InjectedSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -53,10 +53,10 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
-import eu.scapeproject.model.plan.PlanExecutionState;
-import eu.scapeproject.model.plan.PlanExecutionState.ExecutionState;
-import eu.scapeproject.model.plan.PlanExecutionStateCollection;
-import eu.scapeproject.util.ScapeMarshaller;
+import eu.scape_project.model.plan.PlanExecutionState;
+import eu.scape_project.model.plan.PlanExecutionState.ExecutionState;
+import eu.scape_project.model.plan.PlanExecutionStateCollection;
+import eu.scape_project.util.ScapeMarshaller;
 
 /**
  * JAX-RS Resource for Plan Execution States
