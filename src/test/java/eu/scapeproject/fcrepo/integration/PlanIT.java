@@ -45,10 +45,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import eu.scapeproject.model.plan.PlanExecutionState;
-import eu.scapeproject.model.plan.PlanExecutionState.ExecutionState;
-import eu.scapeproject.model.plan.PlanExecutionStateCollection;
-import eu.scapeproject.util.ScapeMarshaller;
+import eu.scape_project.model.plan.PlanExecutionState;
+import eu.scape_project.model.plan.PlanExecutionState.ExecutionState;
+import eu.scape_project.model.plan.PlanExecutionStateCollection;
+import eu.scape_project.util.ScapeMarshaller;
 
 /**
  *

@@ -18,9 +18,9 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.ws.rs.ext.Provider;
 
-import org.fcrepo.kernel.RdfLexicon;
-import org.fcrepo.kernel.services.NodeService;
-import org.fcrepo.http.commons.session.SessionFactory;
+import org.fcrepo.RdfLexicon;
+import org.fcrepo.services.NodeService;
+import org.fcrepo.session.SessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
