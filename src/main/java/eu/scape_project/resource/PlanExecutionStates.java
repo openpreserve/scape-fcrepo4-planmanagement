@@ -37,12 +37,14 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBException;
 
-import org.fcrepo.FedoraObject;
-import org.fcrepo.rdf.SerializationUtils;
-import org.fcrepo.services.DatastreamService;
-import org.fcrepo.services.NodeService;
-import org.fcrepo.services.ObjectService;
-import org.fcrepo.session.InjectedSession;
+import org.fcrepo.http.commons.session.InjectedSession;
+import org.fcrepo.kernel.FedoraObject;
+import org.fcrepo.kernel.RdfLexicon;
+import org.fcrepo.kernel.rdf.SerializationUtils;
+import org.fcrepo.kernel.rdf.impl.DefaultGraphSubjects;
+import org.fcrepo.kernel.services.DatastreamService;
+import org.fcrepo.kernel.services.NodeService;
+import org.fcrepo.kernel.services.ObjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -99,15 +101,14 @@ public class PlanExecutionStates {
                 this.objectService.getObject(this.session, planUri);
 
         /* get the relevant information from the RDF dataset */
-        final Dataset data = plan.getPropertiesDataset();
+        final Dataset data = plan.getPropertiesDataset(new DefaultGraphSubjects(this.session));
         final Model rdfModel = SerializationUtils.unifyDatasetModel(data);
-        String subject = "info:fedora" + planUri;
+        String subject = RdfLexicon.RESTAPI_NAMESPACE + planUri;
         final StmtIterator execs =
                 rdfModel.listStatements(
                         rdfModel.getResource(subject),
                         rdfModel.getProperty("http://scapeproject.eu/model#hasExecState"),
                         (RDFNode) null);
-
         /* create the response from the data saved in fcrepo */
         List<PlanExecutionState> states = new ArrayList<>();
         while (execs.hasNext()) {
@@ -120,12 +121,12 @@ public class PlanExecutionStates {
                             rdfModel.getProperty("http://scapeproject.eu/model#hasExecutionState"),
                             (RDFNode) null).next().getObject().asLiteral()
                             .getString();
-            final long timestamp =
+            final long timestamp = Long.parseLong(
                     rdfModel.listStatements(
                             res,
                             rdfModel.getProperty("http://scapeproject.eu/model#hasTimeStamp"),
                             (RDFNode) null).next().getObject().asLiteral()
-                            .getLong();
+                            .getString());
             states.add(new PlanExecutionState(new Date(timestamp),
                     ExecutionState.valueOf(state)));
         }
@@ -160,19 +161,19 @@ public class PlanExecutionStates {
 
         final FedoraObject execState = this.objectService.createObject(this.session, planUri + "/" + UUID.randomUUID());
         StringBuilder sparql = new StringBuilder();
-        sparql.append("INSERT {<info:fedora/" + execState.getPath() +
+        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE + execState.getPath() +
                 "> <http://scapeproject.eu/model#hasExecutionState> \"" + state.getState() + "\"} WHERE {};");
-        sparql.append("INSERT {<info:fedora/" + execState.getPath() +
+        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE + execState.getPath() +
                 "> <http://scapeproject.eu/model#hasTimeStamp> \"" + state.getTimeStamp().getTime() + "\"} WHERE {};");
 
         /* add the exec state to the parent */
-        sparql.append("INSERT {<info:fedora/" + plan.getPath() +
+        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE + plan.getPath() +
                 "> <http://scapeproject.eu/model#hasType> \"PLAN\"} WHERE {};");
-        sparql.append("INSERT {<info:fedora" + plan.getPath() +
-                "> <http://scapeproject.eu/model#hasExecState> <info:fedora" +
+        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE + plan.getPath() +
+                "> <http://scapeproject.eu/model#hasExecState> <" + RdfLexicon.RESTAPI_NAMESPACE +
                 execState.getPath() + ">} WHERE {};");
 
-        plan.updatePropertiesDataset(sparql.toString());
+        plan.updatePropertiesDataset(new DefaultGraphSubjects(this.session), sparql.toString());
         this.session.save();
         return Response.created(URI.create(planUri)).build();
     }

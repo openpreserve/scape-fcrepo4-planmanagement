@@ -9,7 +9,7 @@
     "storage" : {
         "binaryStorage" : {
             "type" : "transient",
-            "minimumBinarySizeInBytes" : 1
+            "minimumBinarySizeInBytes" : 1024
         }
     },
     "security" : {
@@ -17,8 +17,8 @@
             "roles" : ["readonly","readwrite","admin"],
             "useOnFailedLogin" : false
         },
-        "providers" : [
-            { "classname" : "servlet" }
+       "providers" : [
+            { "classname" : "org.fcrepo.http.commons.session.BypassSecurityServletAuthenticationProvider" }
         ]
     },
     "node-types" : ["fedora-node-types.cnd"]

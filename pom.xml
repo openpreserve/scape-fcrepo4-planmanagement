@@ -9,7 +9,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <fcrepo.version>4.0.0-alpha-2-SNAPSHOT</fcrepo.version>
+    <fcrepo.version>4.0.0-alpha-3-SNAPSHOT</fcrepo.version>
     <spring.version>3.2.2.RELEASE</spring.version>
   </properties>
 

@@ -28,14 +28,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.fcrepo.Datastream;
-import org.fcrepo.FedoraObject;
-import org.fcrepo.exception.InvalidChecksumException;
-import org.fcrepo.rdf.GraphProperties;
-import org.fcrepo.services.DatastreamService;
-import org.fcrepo.services.NodeService;
-import org.fcrepo.services.ObjectService;
-import org.fcrepo.session.InjectedSession;
+import org.fcrepo.http.commons.session.InjectedSession;
+import org.fcrepo.kernel.Datastream;
+import org.fcrepo.kernel.FedoraObject;
+import org.fcrepo.kernel.RdfLexicon;
+import org.fcrepo.kernel.exception.InvalidChecksumException;
+import org.fcrepo.kernel.rdf.GraphProperties;
+import org.fcrepo.kernel.rdf.impl.DefaultGraphSubjects;
+import org.fcrepo.kernel.services.DatastreamService;
+import org.fcrepo.kernel.services.NodeService;
+import org.fcrepo.kernel.services.ObjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -79,20 +81,21 @@ public class Plans {
         final String path = PLAN_FOLDER + planId;
         final FedoraObject plan =
                 objectService.createObject(this.session, path);
+        plan.getNode().addMixin("scape:plan");
 
         /* add the properties to the RDF graph of the exec state object */
         StringBuilder sparql = new StringBuilder();
 
         /* add the exec state to the parent */
-        sparql.append("INSERT {<info:fedora/" + plan.getPath() +
+        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE + plan.getPath() +
                 "> <http://scapeproject.eu/model#hasType> \"PLAN\"} WHERE {};");
-        sparql.append("INSERT {<info:fedora/" + plan.getPath() +
+        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE + plan.getPath() +
                 "> <http://scapeproject.eu/model#hasLifecycleState> \"ENABLED\"} WHERE {};");
 
         /* execute the sparql update */
-        plan.updatePropertiesDataset(sparql.toString());
+        plan.updatePropertiesDataset(new DefaultGraphSubjects(this.session), sparql.toString());
 
-        final Dataset update = plan.updatePropertiesDataset(sparql.toString());
+        final Dataset update = plan.updatePropertiesDataset(new DefaultGraphSubjects(this.session), sparql.toString());
         final Model problems =
                 update.getNamedModel(GraphProperties.PROBLEMS_MODEL_NAME);
 

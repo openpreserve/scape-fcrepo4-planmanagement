@@ -32,11 +32,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
-import org.fcrepo.Datastream;
-import org.fcrepo.rdf.impl.DefaultGraphSubjects;
-import org.fcrepo.services.DatastreamService;
-import org.fcrepo.services.NodeService;
-import org.fcrepo.session.InjectedSession;
+import org.fcrepo.http.commons.session.InjectedSession;
+import org.fcrepo.kernel.Datastream;
+import org.fcrepo.kernel.RdfLexicon;
+import org.fcrepo.kernel.rdf.impl.DefaultGraphSubjects;
+import org.fcrepo.kernel.services.DatastreamService;
+import org.fcrepo.kernel.services.NodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -78,7 +79,7 @@ public class PlanSearch {
         final Model model =
                 this.nodeService
                         .searchRepository(
-                                new DefaultGraphSubjects(),
+                                new DefaultGraphSubjects(this.session),
                                 ResourceFactory
                                         .createResource("info:fedora/objects/scape/plans"),
                                 this.session, query, limit, 0)
@@ -121,7 +122,7 @@ public class PlanSearch {
                     output.write(sru.toString().getBytes());
                     final Datastream plato =
                             datastreamService.getDatastream(session, uri
-                                    .substring(uri.indexOf('/') + 1) +
+                                    .substring(RdfLexicon.RESTAPI_NAMESPACE.length()) +
                                     "/plato-xml");
                     IOUtils.copy(plato.getContent(), output);
                     sru.setLength(0);

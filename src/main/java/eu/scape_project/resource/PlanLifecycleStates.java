@@ -28,11 +28,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.JAXBException;
 
-import org.fcrepo.FedoraObject;
-import org.fcrepo.rdf.GraphProperties;
-import org.fcrepo.rdf.SerializationUtils;
-import org.fcrepo.services.ObjectService;
-import org.fcrepo.session.InjectedSession;
+import org.fcrepo.http.commons.session.InjectedSession;
+import org.fcrepo.kernel.FedoraObject;
+import org.fcrepo.kernel.RdfLexicon;
+import org.fcrepo.kernel.rdf.GraphProperties;
+import org.fcrepo.kernel.rdf.SerializationUtils;
+import org.fcrepo.kernel.rdf.impl.DefaultGraphSubjects;
+import org.fcrepo.kernel.services.ObjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -69,9 +71,9 @@ public class PlanLifecycleStates {
                 this.objectService.getObject(this.session, planUri);
 
         /* get the relevant information from the RDF dataset */
-        final Dataset data = plan.getPropertiesDataset();
+        final Dataset data = plan.getPropertiesDataset(new DefaultGraphSubjects(this.session));
         final Model rdfModel = SerializationUtils.unifyDatasetModel(data);
-        String subject = "info:fedora" + planUri;
+        String subject = RdfLexicon.RESTAPI_NAMESPACE + planUri;
         final String lifecycle =
                 rdfModel.listStatements(
                         rdfModel.getResource(subject),
@@ -98,13 +100,13 @@ public class PlanLifecycleStates {
 
         /* delete the existing lifecyclestate and add the new one */
         StringBuilder sparql = new StringBuilder();
-        sparql.append("DELETE {<info:fedora/" +
+        sparql.append("DELETE {<" + RdfLexicon.RESTAPI_NAMESPACE +
                 plan.getPath() +
                 "> <http://scapeproject.eu/model#hasLifecycleState> \"ENABLED\"} WHERE {};");
-        sparql.append("INSERT {<info:fedora/" + plan.getPath() +
+        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE + plan.getPath() +
                 "> <http://scapeproject.eu/model#hasLifecycleState> \"" +
                 state + "\"} WHERE {};");
-        final Model errors = plan.updatePropertiesDataset(sparql.toString()).getNamedModel(GraphProperties.PROBLEMS_MODEL_NAME);
+        final Model errors = plan.updatePropertiesDataset(new DefaultGraphSubjects(this.session), sparql.toString()).getNamedModel(GraphProperties.PROBLEMS_MODEL_NAME);
         // TODO: check for errors
 
         this.session.save();

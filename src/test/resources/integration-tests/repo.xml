@@ -11,16 +11,10 @@
     <context:annotation-config/>
 
     <bean name="modeshapeRepofactory"
-          class="org.fcrepo.spring.ModeShapeRepositoryFactoryBean">
+          class="org.fcrepo.kernel.spring.ModeShapeRepositoryFactoryBean">
       <property name="repositoryConfiguration" value="integration-tests/test_repository.json"/>
     </bean>
 
     <bean class="org.modeshape.jcr.JcrRepositoryFactory"/>
 
-    <bean class="org.fcrepo.services.ObjectService"/>
-    <bean class="org.fcrepo.services.LowLevelStorageService"/>
-    <bean class="org.fcrepo.services.DatastreamService"/>
-    <bean class="org.fcrepo.services.NodeService"/>
-    <bean class="org.fcrepo.binary.PolicyDecisionPoint" />
-    
 </beans>
