@@ -6,8 +6,8 @@ https://github.com/openplanets/scape-apis
 
 Prepackaged WAR
 ---------------
-A prepackaged Fedora 4 WAR file which includes the SCAPE Connector API and the SCAPE Plan Management API is available at
-https://docs.google.com/file/d/0B5nd_qlYdcqyVXFzZ1B4dmdzN28/edit?usp=sharing
+A prepackaged Fedora 4 WAR file which includes the SCAPE Connector API and the SCAPE Plan Management API is available on Google Drive:
+[SCAPE Fcrepo 4 Alpha-3 WAR](https://drive.google.com/file/d/0B5nd_qlYdcqyRjlKb0JjaUx1Sm8/edit?usp=sharing) 
 
 
 Manual Installation
