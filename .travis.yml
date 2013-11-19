@@ -5,6 +5,6 @@ jdk:
 before_install:
   - git clone https://github.com/futures/fcrepo4.git
   - cd fcrepo4
-  - git checkout fcrepo-4.0.0-scape
+  - MAVEN_OPTS="-Xmx1024m -XX:MaxPermSize=1024m"
   - mvn -q clean install -DskipTests=true
   - cd ..
