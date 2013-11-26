@@ -1,100 +1,72 @@
-SCAPE Plan Management on Fedora 4 
-=================================
+# SCAPE Plan Management API on Fedora 4
 
 This is the implementation of the SCAPE Plan Management API as described by the spec available at 
 https://github.com/openplanets/scape-apis
 
-Prepackaged WAR
----------------
-A prepackaged Fedora 4 WAR file which includes the SCAPE Connector API and the SCAPE Plan Management API is available on Google Drive:
-[SCAPE Fcrepo 4 Alpha-3 WAR](https://drive.google.com/file/d/0B5nd_qlYdcqyRjlKb0JjaUx1Sm8/edit?usp=sharing) 
+### What does SCAPE Plan Management API on Fedora 4 do?
+
+This is the implementation of the SCAPE Plan Management API as described by the spec available at 
+https://github.com/openplanets/scape-apis
+
+### What are the benefits for end user?
+
+* He can use the Plan Management API
+
+### Who is intended audience?
+
+* SCAPE users
+
+## Features and roadmap
+
+### Version 0.0.1
+
+* See https://github.com/openplanets/scape-apis 
+
+### Roadmap
+
+* finished
+
+## How to install and use
+
+* see https://github.com/openplanets/scape-frepo4-planmanagement/README_INSTALL_AND_USAGE.md
 
 
-Manual Installation
--------------------
-_If you're not sure you want to do this by yourself you can download a prepackaged WAR file from_ https://docs.google.com/file/d/0B5nd_qlYdcqyVXFzZ1B4dmdzN28/edit?usp=sharing
+### Troubleshooting
 
-Since Fedora 4 is in active development and therefore the APIs used are not yet finalized, this project might not run on an arbitrary version of Fedora 4.
-A version fcrepo-4.0.0-scape has therefore been tagged which is compatible with the current implementations:
-https://github.com/futures/fcrepo4/tree/fcrepo-4.0.0-scape
+## More information
 
-#### 1. Get Fedora 4
+### Publications
 
-Checkout and build the tagged version of Fedora 4 from Github at https://github.com/futures/fcrepo4
-OR download a prepackaged WAR from https://wiki.duraspace.org/display/FF/Downloads
+### Licence
 
-```bash
-$ git clone https://github.com/futures/fcrepo4.git
-$ cd fcrepo4
-$ git checkout fcrepo-4.0.0-scape
-$ mvn clean install
-```
+* SCAPE Plan Management API on Fedora 4 is released under [Apache version 2.0 license](LICENSE.txt).
 
-#### 2. Deploy Fedora 4
+### Acknowledgements
 
-Deploy the web application on a servlet container e.g. Apache Tomcat by copying the war file to the servlet container's webapp directory and start Fedora 4 so that the WAR file gets exploded.
+* Part of this work was supported by the European Union in the 7th Framework Program, IST, through the SCAPE project, Contract 270137.
 
-```bash
-$ cp fcrepo4/fcrepo-webapp/fcrepo-webapp-{VERSION}.war {TOMCAT_HOME}/webapps/fcrepo.war
-$ {TOMCAT_HOME}/bin/catalina.sh run
-```
+### Support
 
-#### 3. Create the Datamodel JAR
+* This tool is supported by the [Open Planets Foundation](http://www.openplanetsfoundation.org). Commercial support is provided by company X.
 
-Checkout and build/install the Scape platform data model from  https://github.com/openplanets/scape-platform-datamodel
+## Develop
 
-```bash
-$ git clone https://github.com/openplanets/scape-platform-datamodel.git
-$ cd scape-platform-datamodel
-$ mvn clean install
-```
+[![Build Status](https://travis-ci.org/openplanets/scape-fcrepo-planmanagement.png)](https://travis-ci.org/openplanets/scape-fcrepo4-planmanagement)
 
-#### 4. Create the Plan Management JAR
+### Build
 
-Checkout and build/package the plan Management api from https://github.com/openplanets/scape-fcrepo4-planmanagement
+* see https://github.com/openplanets/scape-fcrepo4-planmanagement/README_INSTALL_AND_USAGE.md
 
-```bash
-$ git clone https://github.com/openplanets/scape-fcrepo4-planmanagement.git
-$ cd scape-fcrepo4-planmanagement
-$ mvn clean compile package
-```	
+### Deploy
 
-#### 5. Install the JAR files
+* see https://github.com/openplanets/scape-fcrepo4-planmanagement/README_INSTALL_AND_USAGE.md
 
-Copy the required JAR files from platform data model and Plan Management API to the Fedora 4 Webapp
+### Contribute
 
-```bash
-$ cp scape-fcrepo4-planmanagement/target/scape-fcrepo4-planmanagement-{VERSION}.jar {TOMCAT_HOME}/webapps/fcrepo/WEB-INF/lib/
-$ cp scape-platform-datamodel/target/scape-platform-datamodel-{VERSION}.jar {TOMCAT_HOME}/webapps/fcrepo/WEB-INF/lib/
-```
-	
-#### 6. Update the web.xml
+1. [Fork the GitHub project](https://help.github.com/articles/fork-a-repo)
+2. Change the code and push into the forked project
+3. [Submit a pull request](https://help.github.com/articles/using-pull-requests)
 
-Update the configuration of the web application in order to have Fedora 4 discover the new HTTP endpoints at /scape/plans
+To increase the changes of you code being accepted and merged into the official source here's a checklist of things to go over before submitting a contribution. For example:
 
-*  Add "classpath:scape-plans.xml" to the contextConfigLocation:
-
-```xml
-<context-param>
-	<param-name>contextConfigLocation</param-name>
-	<param-value>WEB-INF/classes/spring/*.xml classpath:scape-plans.xml</param-value>
-</context-param>
-```
-
-*  Add "eu.scape_project.resource" to the init parameter in order for Jersey to discover the new endpoint
-
-```xml
-<init-param>
-	<param-name>com.sun.jersey.config.property.packages</param-name>
-	<param-value>org.fcrepo, eu.scape_project.resource</param-value>
-</init-param>
-```
-#### 7. Start the servlet container
-
-Run the servlet container again and check that you can interact with the Plan Management API
-
-```bash
-$ {TOMCAT_HOME}/bin/catalina.sh run
-$ curl -X PUT http://localhost:8080/fcrepo/rest/scape/plan/myplan -d "empty-plan"
-```
-
+* Agrees to contributor license agreement, certifying that any contributed code is original work and that the copyright is turned over to the project
