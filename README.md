@@ -20,7 +20,7 @@ https://github.com/openplanets/scape-apis
 
 ### Version 0.0.1
 
-* See https://github.com/openplanets/scape-apis 
+* see https://github.com/openplanets/scape-fcrepo4-planmanagement/blob/master/README_INSTALL_AND_USAGE.md
 
 ### Roadmap
 
@@ -28,7 +28,7 @@ https://github.com/openplanets/scape-apis
 
 ## How to install and use
 
-* see https://github.com/openplanets/scape-frepo4-planmanagement/README_INSTALL_AND_USAGE.md
+* see https://github.com/openplanets/scape-fcrepo4-planmanagement/blob/master/README_INSTALL_AND_USAGE.md
 
 
 ### Troubleshooting
@@ -55,11 +55,11 @@ https://github.com/openplanets/scape-apis
 
 ### Build
 
-* see https://github.com/openplanets/scape-fcrepo4-planmanagement/README_INSTALL_AND_USAGE.md
+* see https://github.com/openplanets/scape-fcrepo4-planmanagement/blob/master/README_INSTALL_AND_USAGE.md
 
 ### Deploy
 
-* see https://github.com/openplanets/scape-fcrepo4-planmanagement/README_INSTALL_AND_USAGE.md
+* see https://github.com/openplanets/scape-fcrepo4-planmanagement/blob/master/README_INSTALL_AND_USAGE.md
 
 ### Contribute
 
