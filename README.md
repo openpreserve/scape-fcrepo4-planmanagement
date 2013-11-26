@@ -51,7 +51,7 @@ https://github.com/openplanets/scape-apis
 
 ## Develop
 
-[![Build Status](https://travis-ci.org/openplanets/scape-fcrepo-planmanagement.png)](https://travis-ci.org/openplanets/scape-fcrepo4-planmanagement)
+[![Build Status](https://travis-ci.org/openplanets/scape.png)](https://travis-ci.org/openplanets/scape-fcrepo4-planmanagement)
 
 ### Build
 
