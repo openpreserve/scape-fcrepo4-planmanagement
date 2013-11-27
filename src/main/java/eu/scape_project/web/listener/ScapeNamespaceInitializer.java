@@ -66,7 +66,7 @@ public class ScapeNamespaceInitializer implements AbstractResourceModelListener 
             final Session session= this.sessionFactory.getInternalSession();
             /* make sure that the scape namespace is available in fcrepo */
             final Dataset namespace =
-                    this.nodeService.getNamespaceRegistryGraph(session);
+                    this.nodeService.getNamespaceRegistryDataset(session);
             UpdateAction.parseExecute(
                     "INSERT {<http://scapeproject.eu/model#> <" +
                             RdfLexicon.HAS_NAMESPACE_PREFIX + "> \"scape\"} WHERE {}",
