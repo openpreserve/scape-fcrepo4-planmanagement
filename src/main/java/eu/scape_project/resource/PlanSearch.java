@@ -124,7 +124,7 @@ public class PlanSearch {
                             datastreamService.getDatastream(session, uri
                                     .substring(RdfLexicon.RESTAPI_NAMESPACE.length()) +
                                     "/plato-xml");
-                    IOUtils.copy(plato.getContent(), output);
+                    IOUtils.copy(new XmlDeclarationStrippingInputstream(plato.getContent()), output);
                     sru.setLength(0);
                     sru.append("</srw:recordData>");
                     sru.append("</srw:record>");
