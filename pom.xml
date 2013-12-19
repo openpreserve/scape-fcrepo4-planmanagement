@@ -23,10 +23,6 @@
 				<name>env.TRAVIS</name>
 				<value>true</value>
 			</property>
-			<!-- also enable this profile on jenkins -->
-			<property>
-				<name>env.JENKINS_URL</name>
-			</property>
 		</activation>
 		  <repositories>
 			<repository>
