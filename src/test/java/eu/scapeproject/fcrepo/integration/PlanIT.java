@@ -59,9 +59,11 @@ import eu.scape_project.util.ScapeMarshaller;
 @ContextConfiguration(locations = {"/integration-tests/test-container.xml"})
 public class PlanIT {
 
-    private static final String SCAPE_URL = "http://localhost:8080/rest/scape";
+	private static final String PORT = "8808";
 
-    private static final String FEDORA_URL = "http://localhost:8080/rest/";
+    private static final String SCAPE_URL = "http://localhost:"+PORT+"/rest/scape";
+
+    private static final String FEDORA_URL = "http://localhost:"+PORT+"/rest/";
 
     private final DefaultHttpClient client = new DefaultHttpClient();
 
