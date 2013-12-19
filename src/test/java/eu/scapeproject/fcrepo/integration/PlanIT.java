@@ -59,7 +59,7 @@ import eu.scape_project.util.ScapeMarshaller;
 @ContextConfiguration(locations = {"/integration-tests/test-container.xml"})
 public class PlanIT {
 
-	private static final String PORT = "8808";
+	private static final String PORT = "11111";
 
     private static final String SCAPE_URL = "http://localhost:"+PORT+"/rest/scape";
 
