@@ -3,6 +3,10 @@ jdk:
   - oraclejdk7
   - openjdk7
 before_install:
+  - PEARTREEVER=1.1.1
+  - PEARTREEJAR=pairtree-$PEARTREEVER.jar
+  - wget -O $PEARTREEJAR http://downloads.sourceforge.net/project/loc-xferutils/loc-pairtree-java-library/$PEARTREEJAR?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Floc-xferutils%2Ffiles%2Floc-pairtree-java-library%2F&ts=1384173580&use_mirror=heanet
+  - mvn install:install-file -Dfile=$PEARTREEJAR -DartifactId=pairtree -Dversion=$PEARTREEVER -DgroupId=gov.loc -Dpackaging=jar
   - git clone https://github.com/openplanets/scape-platform-datamodel.git
   - cd scape-platform-datamodel
   - mvn clean install -DskipTests=true
