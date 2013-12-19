@@ -13,6 +13,18 @@
     <spring.version>3.2.2.RELEASE</spring.version>
   </properties>
 
+  <!-- for fcrepo4 snapshot builds -->
+  <repositories>
+    <repository>
+      <id>sonatypesnapshots</id>
+      <url>http://oss.sonatype.org/content/repositories/snapshots/</url>
+	  <layout>default</layout>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+  
   <dependencies>
     <dependency>
       <groupId>org.fcrepo</groupId>
