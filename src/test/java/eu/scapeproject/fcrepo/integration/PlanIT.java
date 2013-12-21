@@ -232,8 +232,10 @@ public class PlanIT {
         HttpResponse resp = this.client.execute(get);
         assertEquals(200, resp.getStatusLine().getStatusCode());
         String xml = EntityUtils.toString(resp.getEntity(),"UTF-8");
-        assertTrue(0 < xml.length());
         get.releaseConnection();
+        assertTrue(0 < xml.length());
+        assertEquals(0, xml.indexOf("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"));
+        assertEquals(-1, xml.indexOf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", 10));
     }
 
     private void putPlanLifecycleState(String planId, String state)
