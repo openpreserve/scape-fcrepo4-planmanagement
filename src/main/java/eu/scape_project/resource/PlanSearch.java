@@ -116,8 +116,11 @@ public class PlanSearch {
                     throws IOException {
                 try {
                     final StringBuilder sru = new StringBuilder();
+                    final String planId = uri.substring((RdfLexicon.RESTAPI_NAMESPACE + Plans.PLAN_FOLDER).length() + 1);
                     sru.append("<srw:record>");
+                    sru.append("<srw:recordPacking>string</srw:recordPacking>");
                     sru.append("<srw:recordSchema>http://scapeproject.eu/schema/plato</srw:recordSchema>");
+                    sru.append("<srw:extraRecordData>").append(planId).append("</srw:extraRecordData>");
                     sru.append("<srw:recordData>");
                     output.write(sru.toString().getBytes());
                     final Datastream plato =
