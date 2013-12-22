@@ -14,6 +14,8 @@
 
 package eu.scape_project.resource;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +34,9 @@ import javax.jcr.query.qom.Source;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.StreamingOutput;
 import javax.xml.bind.JAXBException;
 
 import org.fcrepo.http.commons.session.InjectedSession;
@@ -44,6 +48,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import eu.scape_project.model.plan.PlanData;
+import eu.scape_project.model.plan.PlanDataCollection;
+import eu.scape_project.model.plan.PlanLifecycleState;
+import eu.scape_project.model.plan.PlanLifecycleState.PlanState;
 import eu.scape_project.util.ScapeMarshaller;
 
 /**
@@ -89,18 +96,42 @@ public class PlanList {
     final long offset) throws RepositoryException {
         final List<PlanData> plans = new ArrayList<>();
         NodeIterator nodes = this.retrievePlanNodes(0, 0);
-        System.out.println("Found:" + nodes.getSize() + " nodes");
         while (nodes.hasNext()) {
             Node plan = (Node) nodes.next();
             PropertyIterator props = plan.getProperties("scape:*");
+            PlanData.Builder data = new PlanData.Builder();
             while (props.hasNext()) {
                 Property prop = (Property) props.next();
                 for (Value val : prop.getValues()) {
-                    System.out.println(prop.getName() + ": " + val.getString());
+                    if (prop.getName().equals("scape:hasTitle")){
+                        data.title(val.getString());
+                    }
+                    if (prop.getName().equals("scape:hasDescription")){
+                        data.description(val.getString());
+                    }
+                    if (prop.getName().equals("scape:hasLifeCycleState")) {
+                        String state= val.getString();
+                        int pos;
+                        if ((pos = state.indexOf(':')) != -1) {
+                            data.lifecycleState(new PlanLifecycleState(PlanState.valueOf(state.substring(0,pos)),state.substring(pos + 1)));
+                        }else {
+                            data.lifecycleState(new PlanLifecycleState(PlanState.valueOf(state),""));
+                        }
+                    }
                 }
             }
         }
-        return Response.ok().build();
+        return Response.ok(new StreamingOutput() {
+            @Override
+            public void write(OutputStream sink) throws IOException,
+                    WebApplicationException {
+                try {
+                    marshaller.serialize(new PlanDataCollection(plans), sink);
+                } catch (JAXBException e) {
+                    throw new IOException(e);
+                }
+            }
+        }).build();
     }
 
     private NodeIterator retrievePlanNodes(long limit, long offset)

@@ -130,7 +130,7 @@ public class PlanIT {
         HttpResponse resp = this.client.execute(get);
         String state = EntityUtils.toString(resp.getEntity());
         assertEquals(200, resp.getStatusLine().getStatusCode());
-        assertEquals("ENABLED:Initial creation", state);
+        assertEquals("ENABLED:Initial deployment", state);
         get.releaseConnection();
     }
 

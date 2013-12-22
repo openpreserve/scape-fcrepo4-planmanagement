@@ -33,7 +33,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
@@ -59,6 +58,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 
 import eu.scape_project.model.plan.PlanData;
 import eu.scape_project.model.plan.PlanExecutionState;
+import eu.scape_project.model.plan.PlanLifecycleState;
 
 /**
  * JAX-RS Resource for Plans
@@ -104,7 +104,7 @@ public class Plans {
          */
         final ByteArrayOutputStream sink = new ByteArrayOutputStream();
         IOUtils.copy(src, sink);
-        final PlanData planData = extractPlanData(new ByteArrayInputStream(sink.toByteArray()));
+        final PlanData planData = createDeploymentPlanData(new ByteArrayInputStream(sink.toByteArray()));
 
         /* add the properties to the RDF graph of the exec state object */
         StringBuilder sparql = new StringBuilder();
@@ -178,7 +178,7 @@ public class Plans {
                 "Content-Type", "text/plain").build();
     }
 
-    private PlanData extractPlanData(InputStream src) throws IOException {
+    private PlanData createDeploymentPlanData(InputStream src) throws IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder;
         PlanData.Builder data = new PlanData.Builder();
@@ -187,9 +187,9 @@ public class Plans {
             Document doc = builder.parse(src);
             XPathFactory xPathfactory = XPathFactory.newInstance();
             XPath xpath = xPathfactory.newXPath();
-            XPathExpression expr = xpath.compile("/plan/properties[@name]");
-            String title = expr.evaluate(doc);
-            data.title(expr.evaluate(doc));
+            data.title(xpath.compile("/plans/plan/properties/@name").evaluate(doc));
+            data.description(xpath.compile("/plans/plan/properties/description").evaluate(doc));
+            data.lifecycleState(new PlanLifecycleState(eu.scape_project.model.plan.PlanLifecycleState.PlanState.ENABLED, "Initial deployment"));
             return data.build();
         } catch (ParserConfigurationException | SAXException | XPathExpressionException e) {
             throw new IOException(e);
