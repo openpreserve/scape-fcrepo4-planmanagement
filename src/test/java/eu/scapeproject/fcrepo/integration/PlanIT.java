@@ -130,7 +130,7 @@ public class PlanIT {
         HttpResponse resp = this.client.execute(get);
         String state = EntityUtils.toString(resp.getEntity());
         assertEquals(200, resp.getStatusLine().getStatusCode());
-        assertEquals("ENABLED", state);
+        assertEquals("ENABLED:Initial creation", state);
         get.releaseConnection();
     }
 
@@ -145,13 +145,22 @@ public class PlanIT {
         putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
         putPlanLifecycleState(planId, "DISABLED");
 
-        final HttpGet get = new HttpGet(SCAPE_URL + "/plan-state/" + planId);
+        HttpGet get = new HttpGet(SCAPE_URL + "/plan-state/" + planId);
         HttpResponse resp = this.client.execute(get);
         String state = EntityUtils.toString(resp.getEntity());
         assertEquals(200, resp.getStatusLine().getStatusCode());
         assertEquals("DISABLED", state);
         get.releaseConnection();
-    }
+
+        putPlanLifecycleState(planId, "ENABLED:foo");
+
+        get = new HttpGet(SCAPE_URL + "/plan-state/" + planId);
+        resp = this.client.execute(get);
+        state = EntityUtils.toString(resp.getEntity());
+        assertEquals(200, resp.getStatusLine().getStatusCode());
+        assertEquals("ENABLED:foo", state);
+        get.releaseConnection();
+}
 
     @Test
     public void testDeployAndRetrieveExecState() throws Exception {

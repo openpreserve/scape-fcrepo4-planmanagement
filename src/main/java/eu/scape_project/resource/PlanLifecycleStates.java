@@ -71,7 +71,8 @@ public class PlanLifecycleStates {
                 this.objectService.getObject(this.session, planUri);
 
         /* get the relevant information from the RDF dataset */
-        final Dataset data = plan.getPropertiesDataset(new DefaultGraphSubjects(this.session));
+        final Dataset data =
+                plan.getPropertiesDataset(new DefaultGraphSubjects(this.session));
         final Model rdfModel = SerializationUtils.unifyDatasetModel(data);
         String subject = RdfLexicon.RESTAPI_NAMESPACE + planUri;
         final String lifecycle =
@@ -93,20 +94,28 @@ public class PlanLifecycleStates {
         final FedoraObject plan =
                 this.objectService.getObject(this.session, planUri);
 
-        if (!state.equals("ENABLED") && !state.equals("DISABLED")) {
+        if (!state.startsWith("ENABLED:") && !state.equals("ENABLED") &&
+                !state.startsWith("DISABLED:") && !state.equals("DISABLED")) {
             throw new RepositoryException("Illegal state: '" + state +
-                    "' only one of [ENABLED,DISABLED] is allowed");
+                    "' only one of [ENABLED:<details>,DISABLED:<details>] is allowed");
         }
 
         /* delete the existing lifecyclestate and add the new one */
         StringBuilder sparql = new StringBuilder();
         sparql.append("DELETE {<" + RdfLexicon.RESTAPI_NAMESPACE +
                 plan.getPath() +
-                "> <http://scapeproject.eu/model#hasLifecycleState> \"ENABLED\"} WHERE {};");
-        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE + plan.getPath() +
+                "> <http://scapeproject.eu/model#hasLifecycleState> ?o} WHERE {<" + RdfLexicon.RESTAPI_NAMESPACE +
+                plan.getPath() +
+                "> <http://scapeproject.eu/model#hasLifecycleState> ?o} ;");
+        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE +
+                plan.getPath() +
                 "> <http://scapeproject.eu/model#hasLifecycleState> \"" +
                 state + "\"} WHERE {};");
-        final Model errors = plan.updatePropertiesDataset(new DefaultGraphSubjects(this.session), sparql.toString()).getNamedModel(GraphProperties.PROBLEMS_MODEL_NAME);
+        final Model errors =
+                plan.updatePropertiesDataset(
+                        new DefaultGraphSubjects(this.session),
+                        sparql.toString()).getNamedModel(
+                        GraphProperties.PROBLEMS_MODEL_NAME);
         // TODO: check for errors
 
         this.session.save();

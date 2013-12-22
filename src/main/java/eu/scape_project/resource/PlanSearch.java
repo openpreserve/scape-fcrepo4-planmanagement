@@ -120,7 +120,11 @@ public class PlanSearch {
                     sru.append("<srw:record>");
                     sru.append("<srw:recordPacking>string</srw:recordPacking>");
                     sru.append("<srw:recordSchema>http://scapeproject.eu/schema/plato</srw:recordSchema>");
-                    sru.append("<srw:extraRecordData>").append(planId).append("</srw:extraRecordData>");
+                    sru.append("<srw:extraRecordData>");
+                    sru.append("<planId>")
+                        .append(planId)
+                        .append("</planId>");
+                    sru.append("</srw:extraRecordData>");
                     sru.append("<srw:recordData>");
                     output.write(sru.toString().getBytes());
                     final Datastream plato =
