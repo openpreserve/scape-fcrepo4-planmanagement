@@ -14,7 +14,6 @@
 
 package eu.scapeproject.fcrepo.integration;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -23,7 +22,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Date;
 
 import javax.xml.bind.JAXBException;
@@ -47,7 +45,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import eu.scape_project.model.plan.PlanData;
 import eu.scape_project.model.plan.PlanDataCollection;
 import eu.scape_project.model.plan.PlanExecutionState;
 import eu.scape_project.model.plan.PlanExecutionState.ExecutionState;
@@ -252,16 +249,8 @@ public class PlanIT {
                 (PlanDataCollection) marshaller.deserialize(resp.getEntity()
                         .getContent());
         get.releaseConnection();
-        assertEquals(3,plans.getPlanData().size());
-
-        String[] fetchedIds = new String[3];
-        int count = 0;
-        for (PlanData data : plans.getPlanData()) {
-            fetchedIds[count++] = data.getIdentifier().getValue();
-        }
-        Arrays.sort(ids);
-        Arrays.sort(fetchedIds);
-        assertArrayEquals(ids, fetchedIds);
+        int numPlans = plans.getPlanData().size();
+        assertTrue(numPlans >= 3);
 
         /* check the limit and offset feature */
         get = new HttpGet(SCAPE_URL + "/plan-list/1/0");
@@ -274,7 +263,7 @@ public class PlanIT {
         assertEquals(1,plans.getPlanData().size());
 
         /* check the limit and offset feature */
-        get = new HttpGet(SCAPE_URL + "/plan-list/0/2");
+        get = new HttpGet(SCAPE_URL + "/plan-list/0/" + (numPlans - 1));
         resp = this.client.execute(get);
         assertEquals(200, resp.getStatusLine().getStatusCode());
         plans =
