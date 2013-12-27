@@ -14,6 +14,7 @@
 
 package eu.scapeproject.fcrepo.integration;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -22,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.xml.bind.JAXBException;
@@ -45,6 +47,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import eu.scape_project.model.plan.PlanData;
+import eu.scape_project.model.plan.PlanDataCollection;
 import eu.scape_project.model.plan.PlanExecutionState;
 import eu.scape_project.model.plan.PlanExecutionState.ExecutionState;
 import eu.scape_project.model.plan.PlanExecutionStateCollection;
@@ -59,11 +63,13 @@ import eu.scape_project.util.ScapeMarshaller;
 @ContextConfiguration(locations = {"/integration-tests/test-container.xml"})
 public class PlanIT {
 
-	private static final String PORT = System.getProperty("test.port");
+    private static final String PORT = System.getProperty("test.port");
 
-    private static final String SCAPE_URL = "http://localhost:"+PORT+"/rest/scape";
+    private static final String SCAPE_URL = "http://localhost:" + PORT +
+            "/rest/scape";
 
-    private static final String FEDORA_URL = "http://localhost:"+PORT+"/rest/";
+    private static final String FEDORA_URL = "http://localhost:" + PORT +
+            "/rest/";
 
     private final DefaultHttpClient client = new DefaultHttpClient();
 
@@ -160,7 +166,7 @@ public class PlanIT {
         assertEquals(200, resp.getStatusLine().getStatusCode());
         assertEquals("ENABLED:foo", state);
         get.releaseConnection();
-}
+    }
 
     @Test
     public void testDeployAndRetrieveExecState() throws Exception {
@@ -219,6 +225,66 @@ public class PlanIT {
     }
 
     @Test
+    public void testDeployAndListPlans() throws Exception {
+        final String[] ids = new String[3];
+        final String[] uris = new String[3];
+
+        ids[0] = UUID.randomUUID().toString();
+        ids[1] = UUID.randomUUID().toString();
+        ids[2] = UUID.randomUUID().toString();
+
+        uris[0]= SCAPE_URL + "/plan/" + ids[0];
+        uris[1]= SCAPE_URL + "/plan/" + ids[1];
+        uris[2] = SCAPE_URL + "/plan/" + ids[2];
+
+        final File f =
+                new File(this.getClass().getClassLoader().getResource(
+                        "plato-plan.xml").getFile());
+
+        putPlanAndAssertCreated(ids[0], new FileInputStream(f), f.length());
+        putPlanAndAssertCreated(ids[1], new FileInputStream(f), f.length());
+        putPlanAndAssertCreated(ids[2], new FileInputStream(f), f.length());
+
+        HttpGet get = new HttpGet(SCAPE_URL + "/plan-list");
+        HttpResponse resp = this.client.execute(get);
+        assertEquals(200, resp.getStatusLine().getStatusCode());
+        PlanDataCollection plans =
+                (PlanDataCollection) marshaller.deserialize(resp.getEntity()
+                        .getContent());
+        get.releaseConnection();
+        assertEquals(3,plans.getPlanData().size());
+
+        String[] fetchedIds = new String[3];
+        int count = 0;
+        for (PlanData data : plans.getPlanData()) {
+            fetchedIds[count++] = data.getIdentifier().getValue();
+        }
+        Arrays.sort(ids);
+        Arrays.sort(fetchedIds);
+        assertArrayEquals(ids, fetchedIds);
+
+        /* check the limit and offset feature */
+        get = new HttpGet(SCAPE_URL + "/plan-list/1/0");
+        resp = this.client.execute(get);
+        assertEquals(200, resp.getStatusLine().getStatusCode());
+        plans =
+                (PlanDataCollection) marshaller.deserialize(resp.getEntity()
+                        .getContent());
+        get.releaseConnection();
+        assertEquals(1,plans.getPlanData().size());
+
+        /* check the limit and offset feature */
+        get = new HttpGet(SCAPE_URL + "/plan-list/0/2");
+        resp = this.client.execute(get);
+        assertEquals(200, resp.getStatusLine().getStatusCode());
+        plans =
+                (PlanDataCollection) marshaller.deserialize(resp.getEntity()
+                        .getContent());
+        get.releaseConnection();
+        assertEquals(1,plans.getPlanData().size());
+    }
+
+    @Test
     public void testReserveIdentifier() throws Exception {
         HttpGet get = new HttpGet(SCAPE_URL + "/plan-id/reserve");
         HttpResponse resp = this.client.execute(get);
@@ -234,19 +300,25 @@ public class PlanIT {
                 new File(this.getClass().getClassLoader().getResource(
                         "plato-plan.xml").getFile());
 
-        putPlanAndAssertCreated(UUID.randomUUID().toString(), new FileInputStream(f), f.length());
-        putPlanAndAssertCreated(UUID.randomUUID().toString(), new FileInputStream(f), f.length());
-        putPlanAndAssertCreated(UUID.randomUUID().toString(), new FileInputStream(f), f.length());
+        putPlanAndAssertCreated(UUID.randomUUID().toString(),
+                new FileInputStream(f), f.length());
+        putPlanAndAssertCreated(UUID.randomUUID().toString(),
+                new FileInputStream(f), f.length());
+        putPlanAndAssertCreated(UUID.randomUUID().toString(),
+                new FileInputStream(f), f.length());
 
-
-        HttpGet get = new HttpGet(SCAPE_URL + "/plan/sru?version=1&operation=searchRetrieve&query=*");
+        HttpGet get =
+                new HttpGet(SCAPE_URL +
+                        "/plan/sru?version=1&operation=searchRetrieve&query=*");
         HttpResponse resp = this.client.execute(get);
         assertEquals(200, resp.getStatusLine().getStatusCode());
-        String xml = EntityUtils.toString(resp.getEntity(),"UTF-8");
+        String xml = EntityUtils.toString(resp.getEntity(), "UTF-8");
         get.releaseConnection();
         assertTrue(0 < xml.length());
-        assertEquals(0, xml.indexOf("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"));
-        assertEquals(-1, xml.indexOf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", 10));
+        assertEquals(0, xml
+                .indexOf("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>"));
+        assertEquals(-1, xml.indexOf(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>", 10));
     }
 
     private void putPlanLifecycleState(String planId, String state)

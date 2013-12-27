@@ -47,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import eu.scape_project.model.Identifier;
 import eu.scape_project.model.plan.PlanData;
 import eu.scape_project.model.plan.PlanDataCollection;
 import eu.scape_project.model.plan.PlanLifecycleState;
@@ -84,8 +85,9 @@ public class PlanList {
             throws JAXBException {
         marshaller = ScapeMarshaller.newInstance();
     }
+
     @GET
-    public Response retrievePlanList() throws RepositoryException{
+    public Response retrievePlanList() throws RepositoryException {
         return retrievePlanList(0l, 0l);
     }
 
@@ -95,33 +97,40 @@ public class PlanList {
     final long limit, @PathParam("offset")
     final long offset) throws RepositoryException {
         final List<PlanData> plans = new ArrayList<>();
-        NodeIterator nodes = this.retrievePlanNodes(0, 0);
+        NodeIterator nodes = this.retrievePlanNodes(limit, offset);
         while (nodes.hasNext()) {
             Node plan = (Node) nodes.next();
             PropertyIterator props = plan.getProperties("scape:*");
             PlanData.Builder data = new PlanData.Builder();
+            data.identifier(new Identifier(plan.getPath().substring(
+                    plan.getPath().lastIndexOf('/') + 1)));
             while (props.hasNext()) {
                 Property prop = (Property) props.next();
                 for (Value val : prop.getValues()) {
-                    if (prop.getName().equals("scape:hasTitle")){
+                    if (prop.getName().equals("scape:hasTitle")) {
                         data.title(val.getString());
                     }
-                    if (prop.getName().equals("scape:hasDescription")){
+                    if (prop.getName().equals("scape:hasDescription")) {
                         data.description(val.getString());
                     }
                     if (prop.getName().equals("scape:hasLifeCycleState")) {
-                        String state= val.getString();
+                        String state = val.getString();
                         int pos;
                         if ((pos = state.indexOf(':')) != -1) {
-                            data.lifecycleState(new PlanLifecycleState(PlanState.valueOf(state.substring(0,pos)),state.substring(pos + 1)));
-                        }else {
-                            data.lifecycleState(new PlanLifecycleState(PlanState.valueOf(state),""));
+                            data.lifecycleState(new PlanLifecycleState(
+                                    PlanState.valueOf(state.substring(0, pos)),
+                                    state.substring(pos + 1)));
+                        } else {
+                            data.lifecycleState(new PlanLifecycleState(
+                                    PlanState.valueOf(state), ""));
                         }
                     }
                 }
             }
+            plans.add(data.build());
         }
         return Response.ok(new StreamingOutput() {
+
             @Override
             public void write(OutputStream sink) throws IOException,
                     WebApplicationException {
