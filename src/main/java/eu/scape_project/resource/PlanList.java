@@ -113,7 +113,7 @@ public class PlanList {
                     if (prop.getName().equals("scape:hasDescription")) {
                         data.description(val.getString());
                     }
-                    if (prop.getName().equals("scape:hasLifeCycleState")) {
+                    if (prop.getName().equals("scape:hasLifecycleState")) {
                         String state = val.getString();
                         int pos;
                         if ((pos = state.indexOf(':')) != -1) {
