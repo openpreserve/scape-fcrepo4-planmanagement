@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><plans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://ifs.tuwien.ac.at/dp/plato" xmlns:fits="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xsi:schemaLocation="http://ifs.tuwien.ac.at/dp/plato plato-V4.xsd" version="4.0.1">
 <plan>
 <changelog created="2013-07-18T13:04:18" createdBy="fasseg" changed="2013-07-18T13:04:18"/>
-<properties author="frank asseg" organization="fasseg" name="plato-test-plan-scape-1" privateProject="true" reportPublic="false" planType="FULL">
+<properties author="frank asseg" organization="fasseg" name="plato-test-plan-scape" privateProject="true" reportPublic="false" planType="FULL">
 <state value="11"/>
 <description>n/a</description>
 <owner>fasseg</owner>

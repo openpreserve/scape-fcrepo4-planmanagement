@@ -22,6 +22,7 @@ import java.io.InputStream;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -205,5 +206,14 @@ public class Plans {
                 this.datastreamService.getDatastream(this.session, PLAN_FOLDER +
                         planId + "/plato-xml");
         return Response.ok(ds.getContent(), ds.getMimeType()).build();
+    }
+
+    @DELETE
+    @Path("{id}")
+    public Response deletePlan(@PathParam("id") final String planId) throws RepositoryException {
+        final String path = "/" + PLAN_FOLDER + planId;
+        this.nodeService.deleteObject(this.session, path);
+        this.session.save();
+        return Response.ok().build();
     }
 }
