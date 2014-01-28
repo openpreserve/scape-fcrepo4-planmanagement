@@ -72,7 +72,7 @@ import eu.scape_project.model.plan.PlanLifecycleState;
 @Path("/scape/plan")
 public class Plans {
 
-    public static final String PLAN_FOLDER = "objects/scape/plans/";
+    static final String PLAN_FOLDER = "objects/scape/plans/";
 
     @InjectedSession
     private Session session;
@@ -110,44 +110,39 @@ public class Plans {
         /* add the properties to the RDF graph of the exec state object */
         StringBuilder sparql = new StringBuilder();
 
+        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
+        final String planUri = subjects.getGraphSubject(plan.getNode()).getURI();
+
         /* add the exec state to the parent */
-        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE +
-                plan.getPath() +
+        sparql.append("INSERT {<" + planUri +
                 "> <http://scapeproject.eu/model#hasType> \"PLAN\"} WHERE {};");
         if (planData.getTitle() != null) {
-            sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE +
-                    plan.getPath() +
+            sparql.append("INSERT {<" + planUri +
                     "> <http://scapeproject.eu/model#hasTitle> \"" +
                     planData.getTitle() + "\"} WHERE {};");
         }
         if (planData.getIdentifier() != null) {
-            sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE +
-                    plan.getPath() +
+            sparql.append("INSERT {<" + planUri +
                     "> <http://scapeproject.eu/model#hasIdentifier> \"" +
                     planData.getIdentifier().getType() + ":" + planData.getIdentifier().getValue() + "\"} WHERE {};");
         }
         if (planData.getDescription() != null) {
-            sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE +
-                    plan.getPath() +
+            sparql.append("INSERT {<" + planUri +
                     "> <http://scapeproject.eu/model#hasDescription> \"" +
                     planData.getDescription() + "\"} WHERE {};");
         }
         if (planData.getLifecycleState() != null) {
-            sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE +
-                    plan.getPath() +
+            sparql.append("INSERT {<" + planUri +
                     "> <http://scapeproject.eu/model#hasLifecycleState> \"" +
                     planData.getLifecycleState().getState() + ":" +
                     planData.getLifecycleState().getDetails() + "\"} WHERE {};");
         } else {
-            sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE +
-                    plan.getPath() +
+            sparql.append("INSERT {<" + planUri +
                     "> <http://scapeproject.eu/model#hasLifecycleState> \"ENABLED:Initial creation\"} WHERE {};");
         }
         if (planData.getExecutionStates() != null) {
             for (PlanExecutionState state : planData.getExecutionStates()) {
-                sparql.append("INSERT {<" +
-                        RdfLexicon.RESTAPI_NAMESPACE +
-                        plan.getPath() +
+                sparql.append("INSERT {<" + planUri +
                         "> <http://scapeproject.eu/model#hasPlanExecutionState> \"" +
                         state.getState() + ":" + state.getTimeStamp() +
                         "\"} WHERE {};");
@@ -155,12 +150,9 @@ public class Plans {
         }
 
         /* execute the sparql update */
-        plan.updatePropertiesDataset(new DefaultGraphSubjects(this.session),
+        final Dataset update = plan.updatePropertiesDataset(subjects,
                 sparql.toString());
 
-        final Dataset update =
-                plan.updatePropertiesDataset(new DefaultGraphSubjects(
-                        this.session), sparql.toString());
         final Model problems =
                 update.getNamedModel(GraphProperties.PROBLEMS_MODEL_NAME);
 
@@ -169,7 +161,7 @@ public class Plans {
         /* add a datastream holding the plato XML data */
         final Node ds =
                 datastreamService.createDatastreamNode(this.session, path +
-                        "/plato-xml", "text/xml", new ByteArrayInputStream(sink
+                        "/plato-xml", "text/xml", null,  new ByteArrayInputStream(sink
                         .toByteArray()));
 
         /* and persist the changes in fcrepo */

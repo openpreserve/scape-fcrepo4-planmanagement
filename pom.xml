@@ -14,9 +14,9 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <fcrepo.version>4.0.0-alpha-3-SNAPSHOT</fcrepo.version>
-    <spring.version>3.2.2.RELEASE</spring.version>
-    <test.port>8092</test.port>
+		<fcrepo.version>4.0.0-alpha-4-SNAPSHOT</fcrepo.version>
+		<spring.version>3.2.2.RELEASE</spring.version>
+	    <test.port>8092</test.port>
   </properties>
 
   <!-- for fcrepo4 and scape-platform-datamodel snapshot builds when building 

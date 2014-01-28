@@ -74,10 +74,11 @@ public class PlanLifecycleStates {
         final Dataset data =
                 plan.getPropertiesDataset(new DefaultGraphSubjects(this.session));
         final Model rdfModel = SerializationUtils.unifyDatasetModel(data);
-        String subject = RdfLexicon.RESTAPI_NAMESPACE + planUri;
+        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
+
         final String lifecycle =
                 rdfModel.listStatements(
-                        rdfModel.getResource(subject),
+                		subjects.getGraphSubject(plan.getNode()),
                         rdfModel.getProperty("http://scapeproject.eu/model#hasLifecycleState"),
                         (RDFNode) null).next().getObject().asLiteral()
                         .getString();
@@ -90,9 +91,9 @@ public class PlanLifecycleStates {
     final String planId, @PathParam("state")
     String state) throws RepositoryException, JAXBException, IOException {
         /* fetch the plan RDF from fedora */
-        final String planUri = "/" + Plans.PLAN_FOLDER + planId;
+        final String planPath = "/" + Plans.PLAN_FOLDER + planId;
         final FedoraObject plan =
-                this.objectService.getObject(this.session, planUri);
+                this.objectService.getObject(this.session, planPath);
 
         if (!state.startsWith("ENABLED:") && !state.equals("ENABLED") &&
                 !state.startsWith("DISABLED:") && !state.equals("DISABLED")) {
@@ -102,18 +103,18 @@ public class PlanLifecycleStates {
 
         /* delete the existing lifecyclestate and add the new one */
         StringBuilder sparql = new StringBuilder();
-        sparql.append("DELETE {<" + RdfLexicon.RESTAPI_NAMESPACE +
-                plan.getPath() +
-                "> <http://scapeproject.eu/model#hasLifecycleState> ?o} WHERE {<" + RdfLexicon.RESTAPI_NAMESPACE +
-                plan.getPath() +
+        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
+        final String planUri = subjects.getGraphSubject(plan.getNode()).getURI();
+
+        sparql.append("DELETE {<" + planUri +
+                "> <http://scapeproject.eu/model#hasLifecycleState> ?o} WHERE {<" + planUri +
                 "> <http://scapeproject.eu/model#hasLifecycleState> ?o} ;");
-        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE +
-                plan.getPath() +
+        sparql.append("INSERT {<" + planUri +
                 "> <http://scapeproject.eu/model#hasLifecycleState> \"" +
                 state + "\"} WHERE {};");
         final Model errors =
                 plan.updatePropertiesDataset(
-                        new DefaultGraphSubjects(this.session),
+                        subjects,
                         sparql.toString()).getNamedModel(
                         GraphProperties.PROBLEMS_MODEL_NAME);
         // TODO: check for errors

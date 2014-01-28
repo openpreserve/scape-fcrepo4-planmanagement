@@ -7,6 +7,6 @@
   <context:property-placeholder />
 
   <bean id="containerWrapper" class="org.fcrepo.http.commons.test.util.ContainerWrapper" init-method="start" destroy-method="stop" >
-    <property name="port" value="${test.port:8080}"/>
+    <property name="port" value="${test.port:8092}"/>
     <property name="configLocation" value="classpath:integration-tests/web.xml" />
   </bean></beans>

@@ -103,18 +103,16 @@ public class PlanExecutionStates {
         /* get the relevant information from the RDF dataset */
         final Dataset data = plan.getPropertiesDataset(new DefaultGraphSubjects(this.session));
         final Model rdfModel = SerializationUtils.unifyDatasetModel(data);
-        String subject = RdfLexicon.RESTAPI_NAMESPACE + planUri;
+        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
         final StmtIterator execs =
                 rdfModel.listStatements(
-                        rdfModel.getResource(subject),
+                		subjects.getGraphSubject(plan.getNode()),
                         rdfModel.getProperty("http://scapeproject.eu/model#hasExecState"),
                         (RDFNode) null);
         /* create the response from the data saved in fcrepo */
         List<PlanExecutionState> states = new ArrayList<>();
         while (execs.hasNext()) {
-            final Resource res =
-                    rdfModel.createResource(execs.next().getObject()
-                            .asLiteral().getString());
+            final Resource res = rdfModel.createResource(execs.next().getObject().asLiteral().getString());
             final String state =
                     rdfModel.listStatements(
                             res,
@@ -154,28 +152,30 @@ public class PlanExecutionStates {
     final String planId, InputStream src) throws RepositoryException,JAXBException {
 
         final PlanExecutionState state = marshaller.deserialize(PlanExecutionState.class, src);
-        final String planUri = "/" + Plans.PLAN_FOLDER + planId;
+        final String planPath = "/" + Plans.PLAN_FOLDER + planId;
         /* fetch the plan from the repository */
         final FedoraObject plan =
-                this.objectService.getObject(this.session, planUri);
+                this.objectService.getObject(this.session, planPath);
 
-        final FedoraObject execState = this.objectService.createObject(this.session, planUri + "/" + UUID.randomUUID());
+        final FedoraObject execState = this.objectService.createObject(this.session, planPath + "/" + UUID.randomUUID());
+        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
+        final String execStateUri = subjects.getGraphSubject(execState.getNode()).getURI();
+        final String planUri = subjects.getGraphSubject(plan.getNode()).getURI();
+        
         StringBuilder sparql = new StringBuilder();
-        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE + execState.getPath() +
+        sparql.append("INSERT {<" + execStateUri +
                 "> <http://scapeproject.eu/model#hasExecutionState> \"" + state.getState() + "\"} WHERE {};");
-        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE + execState.getPath() +
+        sparql.append("INSERT {<" + execStateUri +
                 "> <http://scapeproject.eu/model#hasTimeStamp> \"" + state.getTimeStamp().getTime() + "\"} WHERE {};");
 
         /* add the exec state to the parent */
-        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE + plan.getPath() +
+        sparql.append("INSERT {<" + planUri +
                 "> <http://scapeproject.eu/model#hasType> \"PLAN\"} WHERE {};");
-        sparql.append("INSERT {<" + RdfLexicon.RESTAPI_NAMESPACE + plan.getPath() +
-                "> <http://scapeproject.eu/model#hasExecState> <" + RdfLexicon.RESTAPI_NAMESPACE +
-                execState.getPath() + ">} WHERE {};");
-
-        plan.updatePropertiesDataset(new DefaultGraphSubjects(this.session), sparql.toString());
+        sparql.append("INSERT {<" + planUri +
+                "> <http://scapeproject.eu/model#hasExecState> <" + execStateUri + ">} WHERE {};");
+        plan.updatePropertiesDataset(subjects, sparql.toString());
         this.session.save();
-        return Response.created(URI.create(planUri)).build();
+        return Response.created(URI.create(planPath)).build();
     }
 
 }
