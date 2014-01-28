@@ -6,13 +6,13 @@ https://github.com/openplanets/scape-apis
 
 Prepackaged WAR
 ---------------
-A prepackaged Fedora 4 WAR file which includes the SCAPE Connector API and the SCAPE Plan Management API is available at
-https://drive.google.com/file/d/0B5nd_qlYdcqyYWwwVE9rRW9FZEk/edit?usp=sharing
+A prepackaged Fedora 4 WAR file which includes the SCAPE Connector API and the SCAPE Plan Management API is available at https://drive.google.com/file/d/0B5nd_qlYdcqyYWwwVE9rRW9FZEk/edit?usp=sharing
+
 
 
 Manual Installation
 -------------------
-_If you're not sure you want to do this by yourself you can download a prepackaged WAR file from https://drive.google.com/file/d/0B5nd_qlYdcqyYWwwVE9rRW9FZEk/edit?usp=sharing
+_If you're not sure you want to do this by yourself you can download a prepackaged WAR file from_ https://drive.google.com/file/d/0B5nd_qlYdcqyYWwwVE9rRW9FZEk/edit?usp=sharing
 
 Since Fedora 4 is in active development and therefore the APIs used are not yet finalized, this project might not run on an arbitrary version of Fedora 4.
 A version fcrepo-4.0.0-scape has therefore been tagged which is compatible with the current implementations:
