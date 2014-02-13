@@ -219,6 +219,11 @@
       <version>3.2.3.RELEASE</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+    	<groupId>eu.scape-project</groupId>
+    	<artifactId>scape-fcrepo4-connector</artifactId>
+    	<version>0.0.1-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 
   <build>

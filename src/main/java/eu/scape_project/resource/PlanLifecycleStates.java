@@ -43,6 +43,8 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 
+import eu.scape_project.rdf.ScapeRDFVocabulary;
+
 /**
  * JAX-RS Resource for Plan life cycle states
  *
@@ -69,20 +71,7 @@ public class PlanLifecycleStates {
         final String planUri = "/" + Plans.PLAN_FOLDER + planId;
         final FedoraObject plan =
                 this.objectService.getObject(this.session, planUri);
-
-        /* get the relevant information from the RDF dataset */
-        final Dataset data =
-                plan.getPropertiesDataset(new DefaultGraphSubjects(this.session));
-        final Model rdfModel = SerializationUtils.unifyDatasetModel(data);
-        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
-
-        final String lifecycle =
-                rdfModel.listStatements(
-                		subjects.getGraphSubject(plan.getNode()),
-                        rdfModel.getProperty("http://scapeproject.eu/model#hasLifecycleState"),
-                        (RDFNode) null).next().getObject().asLiteral()
-                        .getString();
-        return Response.ok(lifecycle, MediaType.TEXT_PLAIN).build();
+        return Response.ok(plan.getNode().getProperty(ScapeRDFVocabulary.HAS_LIFECYCLESTATE).getString(), MediaType.TEXT_PLAIN).build();
     }
 
     @PUT
@@ -96,29 +85,14 @@ public class PlanLifecycleStates {
                 this.objectService.getObject(this.session, planPath);
 
         if (!state.startsWith("ENABLED:") && !state.equals("ENABLED") &&
-                !state.startsWith("DISABLED:") && !state.equals("DISABLED")) {
-            throw new RepositoryException("Illegal state: '" + state +
-                    "' only one of [ENABLED:<details>,DISABLED:<details>] is allowed");
+        		!state.startsWith("DISABLED:") && !state.equals("DISABLED")) {
+        	throw new RepositoryException("Illegal state: '" + state +
+        			"' only one of [ENABLED:<details>,DISABLED:<details>] is allowed");
         }
 
+        plan.getNode().setProperty(ScapeRDFVocabulary.HAS_LIFECYCLESTATE, state);
+
         /* delete the existing lifecyclestate and add the new one */
-        StringBuilder sparql = new StringBuilder();
-        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
-        final String planUri = subjects.getGraphSubject(plan.getNode()).getURI();
-
-        sparql.append("DELETE {<" + planUri +
-                "> <http://scapeproject.eu/model#hasLifecycleState> ?o} WHERE {<" + planUri +
-                "> <http://scapeproject.eu/model#hasLifecycleState> ?o} ;");
-        sparql.append("INSERT {<" + planUri +
-                "> <http://scapeproject.eu/model#hasLifecycleState> \"" +
-                state + "\"} WHERE {};");
-        final Model errors =
-                plan.updatePropertiesDataset(
-                        subjects,
-                        sparql.toString()).getNamedModel(
-                        GraphProperties.PROBLEMS_MODEL_NAME);
-        // TODO: check for errors
-
         this.session.save();
         return Response.ok().build();
     }

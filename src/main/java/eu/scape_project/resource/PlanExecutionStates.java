@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.Value;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -58,6 +59,7 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 import eu.scape_project.model.plan.PlanExecutionState;
 import eu.scape_project.model.plan.PlanExecutionState.ExecutionState;
 import eu.scape_project.model.plan.PlanExecutionStateCollection;
+import eu.scape_project.rdf.ScapeRDFVocabulary;
 import eu.scape_project.util.ScapeMarshaller;
 
 /**
@@ -100,33 +102,13 @@ public class PlanExecutionStates {
         final FedoraObject plan =
                 this.objectService.getObject(this.session, planUri);
 
-        /* get the relevant information from the RDF dataset */
-        final Dataset data = plan.getPropertiesDataset(new DefaultGraphSubjects(this.session));
-        final Model rdfModel = SerializationUtils.unifyDatasetModel(data);
-        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
-        final StmtIterator execs =
-                rdfModel.listStatements(
-                		subjects.getGraphSubject(plan.getNode()),
-                        rdfModel.getProperty("http://scapeproject.eu/model#hasExecState"),
-                        (RDFNode) null);
-        /* create the response from the data saved in fcrepo */
-        List<PlanExecutionState> states = new ArrayList<>();
-        while (execs.hasNext()) {
-            final Resource res = rdfModel.createResource(execs.next().getObject().asLiteral().getString());
-            final String state =
-                    rdfModel.listStatements(
-                            res,
-                            rdfModel.getProperty("http://scapeproject.eu/model#hasExecutionState"),
-                            (RDFNode) null).next().getObject().asLiteral()
-                            .getString();
-            final long timestamp = Long.parseLong(
-                    rdfModel.listStatements(
-                            res,
-                            rdfModel.getProperty("http://scapeproject.eu/model#hasTimeStamp"),
-                            (RDFNode) null).next().getObject().asLiteral()
-                            .getString());
-            states.add(new PlanExecutionState(new Date(timestamp),
-                    ExecutionState.valueOf(state)));
+        final List<PlanExecutionState> states = new ArrayList<>();
+        Value[] vals = plan.getNode().getProperty(ScapeRDFVocabulary.HAS_EXEC_STATE).getValues();
+        for (Value val : vals) {
+        	final int posSep = val.getString().indexOf(':');
+        	final Date ts = new Date(Long.parseLong(val.getString().substring(0,posSep)));
+        	final String state = val.getString().substring(posSep + 1);
+        	states.add(new PlanExecutionState(ts, ExecutionState.valueOf(state)));
         }
         Collections.sort(states);
         final PlanExecutionStateCollection coll =
@@ -158,22 +140,10 @@ public class PlanExecutionStates {
                 this.objectService.getObject(this.session, planPath);
 
         final FedoraObject execState = this.objectService.createObject(this.session, planPath + "/" + UUID.randomUUID());
-        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
-        final String execStateUri = subjects.getGraphSubject(execState.getNode()).getURI();
-        final String planUri = subjects.getGraphSubject(plan.getNode()).getURI();
+        execState.getNode().setProperty(ScapeRDFVocabulary.HAS_EXEC_STATE, state.getState().name());
+        execState.getNode().setProperty(ScapeRDFVocabulary.HAS_TIMESTAMP, state.getTimeStamp().getTime());
+        plan.getNode().setProperty(ScapeRDFVocabulary.HAS_EXEC_STATE, execState.getPath());
         
-        StringBuilder sparql = new StringBuilder();
-        sparql.append("INSERT {<" + execStateUri +
-                "> <http://scapeproject.eu/model#hasExecutionState> \"" + state.getState() + "\"} WHERE {};");
-        sparql.append("INSERT {<" + execStateUri +
-                "> <http://scapeproject.eu/model#hasTimeStamp> \"" + state.getTimeStamp().getTime() + "\"} WHERE {};");
-
-        /* add the exec state to the parent */
-        sparql.append("INSERT {<" + planUri +
-                "> <http://scapeproject.eu/model#hasType> \"PLAN\"} WHERE {};");
-        sparql.append("INSERT {<" + planUri +
-                "> <http://scapeproject.eu/model#hasExecState> <" + execStateUri + ">} WHERE {};");
-        plan.updatePropertiesDataset(subjects, sparql.toString());
         this.session.save();
         return Response.created(URI.create(planPath)).build();
     }

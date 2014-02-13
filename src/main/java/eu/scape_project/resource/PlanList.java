@@ -106,24 +106,22 @@ public class PlanList {
                     plan.getPath().lastIndexOf('/') + 1)));
             while (props.hasNext()) {
                 Property prop = (Property) props.next();
-                for (Value val : prop.getValues()) {
-                    if (prop.getName().equals("scape:hasTitle")) {
-                        data.title(val.getString());
-                    }
-                    if (prop.getName().equals("scape:hasDescription")) {
-                        data.description(val.getString());
-                    }
-                    if (prop.getName().equals("scape:hasLifecycleState")) {
-                        String state = val.getString();
-                        int pos;
-                        if ((pos = state.indexOf(':')) != -1) {
-                            data.lifecycleState(new PlanLifecycleState(
-                                    PlanState.valueOf(state.substring(0, pos)),
-                                    state.substring(pos + 1)));
-                        } else {
-                            data.lifecycleState(new PlanLifecycleState(
-                                    PlanState.valueOf(state), ""));
-                        }
+                if (prop.getName().equals("scape:hasTitle")) {
+                    data.title(prop.getString());
+                }
+                if (prop.getName().equals("scape:hasDescription")) {
+                    data.description(prop.getString());
+                }
+                if (prop.getName().equals("scape:hasLifeCycleState")) {
+                    String state = prop.getString();
+                    int pos;
+                    if ((pos = state.indexOf(':')) != -1) {
+                        data.lifecycleState(new PlanLifecycleState(
+                                PlanState.valueOf(state.substring(0, pos)),
+                                state.substring(pos + 1)));
+                    } else {
+                        data.lifecycleState(new PlanLifecycleState(
+                                PlanState.valueOf(state), ""));
                     }
                 }
             }
