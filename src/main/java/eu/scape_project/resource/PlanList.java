@@ -56,9 +56,9 @@ import eu.scape_project.util.ScapeMarshaller;
 
 /**
  * JAX-RS Resource for Plans
- *
+ * 
  * @author frank asseg
- *
+ * 
  */
 @Component
 @Scope("prototype")
@@ -81,16 +81,29 @@ public class PlanList {
 
     private final ScapeMarshaller marshaller;
 
-    public PlanList()
-            throws JAXBException {
+    public PlanList() throws JAXBException {
         marshaller = ScapeMarshaller.newInstance();
     }
 
+    /**
+     * Retrieve a {@link PlanList} of plans stored in Fedora
+     * 
+     * @return a {@link Response} which maps to a corresponding HTTP response
+     *         containing a {@link PlanList}'s XML representation
+     * @throws RepositoryException
+     */
     @GET
     public Response retrievePlanList() throws RepositoryException {
         return retrievePlanList(0l, 0l);
     }
 
+    /**
+     * Retrieve a {@link PlanList} from Fedora
+     * @param limit the maximum number of entries in the list
+     * @param offset the offset of the list
+     * @return a {@link Response} which maps to a corresponding HTTP response, containing a {@link PlanList}'s XML representation
+     * @throws RepositoryException
+     */
     @GET
     @Path("{limit}/{offset}")
     public Response retrievePlanList(@PathParam("limit")
@@ -102,8 +115,7 @@ public class PlanList {
             Node plan = (Node) nodes.next();
             PropertyIterator props = plan.getProperties("scape:*");
             PlanData.Builder data = new PlanData.Builder();
-            data.identifier(new Identifier(plan.getPath().substring(
-                    plan.getPath().lastIndexOf('/') + 1)));
+            data.identifier(new Identifier(plan.getPath().substring(plan.getPath().lastIndexOf('/') + 1)));
             while (props.hasNext()) {
                 Property prop = (Property) props.next();
                 for (Value val : prop.getValues()) {
@@ -117,12 +129,9 @@ public class PlanList {
                         String state = val.getString();
                         int pos;
                         if ((pos = state.indexOf(':')) != -1) {
-                            data.lifecycleState(new PlanLifecycleState(
-                                    PlanState.valueOf(state.substring(0, pos)),
-                                    state.substring(pos + 1)));
+                            data.lifecycleState(new PlanLifecycleState(PlanState.valueOf(state.substring(0, pos)), state.substring(pos + 1)));
                         } else {
-                            data.lifecycleState(new PlanLifecycleState(
-                                    PlanState.valueOf(state), ""));
+                            data.lifecycleState(new PlanLifecycleState(PlanState.valueOf(state), ""));
                         }
                     }
                 }
@@ -132,8 +141,7 @@ public class PlanList {
         return Response.ok(new StreamingOutput() {
 
             @Override
-            public void write(OutputStream sink) throws IOException,
-                    WebApplicationException {
+            public void write(OutputStream sink) throws IOException, WebApplicationException {
                 try {
                     marshaller.serialize(new PlanDataCollection(plans), sink);
                 } catch (JAXBException e) {
@@ -143,21 +151,15 @@ public class PlanList {
         }).build();
     }
 
-    private NodeIterator retrievePlanNodes(long limit, long offset)
-            throws RepositoryException {
+    private NodeIterator retrievePlanNodes(long limit, long offset) throws RepositoryException {
         this.session.getWorkspace().getQueryManager();
-        final QueryManager queryManager =
-                this.session.getWorkspace().getQueryManager();
+        final QueryManager queryManager = this.session.getWorkspace().getQueryManager();
         final QueryObjectModelFactory factory = queryManager.getQOMFactory();
 
-        final Source selector =
-                factory.selector("scape:plan", "resourcesSelector");
-        final Constraint constraints =
-                factory.fullTextSearch("resourcesSelector", null, factory
-                        .literal(session.getValueFactory().createValue("*")));
+        final Source selector = factory.selector("scape:plan", "resourcesSelector");
+        final Constraint constraints = factory.fullTextSearch("resourcesSelector", null, factory.literal(session.getValueFactory().createValue("*")));
 
-        final Query query =
-                factory.createQuery(selector, constraints, null, null);
+        final Query query = factory.createQuery(selector, constraints, null, null);
 
         if (limit > 0) {
             query.setLimit(limit);

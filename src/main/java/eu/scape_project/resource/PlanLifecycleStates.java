@@ -45,9 +45,9 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 
 /**
  * JAX-RS Resource for Plan life cycle states
- *
+ * 
  * @author frank asseg
- *
+ * 
  */
 @Component
 @Scope("prototype")
@@ -60,6 +60,19 @@ public class PlanLifecycleStates {
     @Autowired
     private ObjectService objectService;
 
+    /**
+     * Retrieve the life cycle state for a plan stored in Fedora
+     * 
+     * @param planId
+     *            the id of the plan
+     * @param uriInfo
+     *            the {@link UriInfo} injected by JAX-RS for having the context
+     *            path available
+     * @return the plan's current life cycle state
+     * @throws RepositoryException
+     *             if an error occurred while fetching the life cycle tate of
+     *             the plan
+     */
     @GET
     @Path("{id}")
     public Response retrievePlanLifecycleState(@PathParam("id")
@@ -67,38 +80,38 @@ public class PlanLifecycleStates {
     UriInfo uriInfo) throws RepositoryException {
         /* fetch the plan RDF from fedora */
         final String planUri = "/" + Plans.PLAN_FOLDER + planId;
-        final FedoraObject plan =
-                this.objectService.getObject(this.session, planUri);
+        final FedoraObject plan = this.objectService.getObject(this.session, planUri);
 
         /* get the relevant information from the RDF dataset */
-        final Dataset data =
-                plan.getPropertiesDataset(new DefaultGraphSubjects(this.session));
+        final Dataset data = plan.getPropertiesDataset(new DefaultGraphSubjects(this.session));
         final Model rdfModel = SerializationUtils.unifyDatasetModel(data);
         final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
 
-        final String lifecycle =
-                rdfModel.listStatements(
-                		subjects.getGraphSubject(plan.getNode()),
-                        rdfModel.getProperty("http://scapeproject.eu/model#hasLifecycleState"),
-                        (RDFNode) null).next().getObject().asLiteral()
-                        .getString();
+        final String lifecycle = rdfModel
+                .listStatements(subjects.getGraphSubject(plan.getNode()), rdfModel.getProperty("http://scapeproject.eu/model#hasLifecycleState"),
+                        (RDFNode) null).next().getObject().asLiteral().getString();
         return Response.ok(lifecycle, MediaType.TEXT_PLAIN).build();
     }
 
+    /**
+     * Update the life cycle state of a plan in Fedora
+     * @param planId the id of the plan to update
+     * @param state the new life cycle state
+     * @return a {@link Response} which maps to a corresponding HTTP response
+     * @throws RepositoryException if an error occurred while storing the life cycle state 
+     * @throws JAXBException if en error occurred while unmarshalling the life cycle state
+     */
     @PUT
     @Path("{id}/{state}")
     public Response updateLifecycleState(@PathParam("id")
     final String planId, @PathParam("state")
-    String state) throws RepositoryException, JAXBException, IOException {
+    String state) throws RepositoryException, JAXBException{
         /* fetch the plan RDF from fedora */
         final String planPath = "/" + Plans.PLAN_FOLDER + planId;
-        final FedoraObject plan =
-                this.objectService.getObject(this.session, planPath);
+        final FedoraObject plan = this.objectService.getObject(this.session, planPath);
 
-        if (!state.startsWith("ENABLED:") && !state.equals("ENABLED") &&
-                !state.startsWith("DISABLED:") && !state.equals("DISABLED")) {
-            throw new RepositoryException("Illegal state: '" + state +
-                    "' only one of [ENABLED:<details>,DISABLED:<details>] is allowed");
+        if (!state.startsWith("ENABLED:") && !state.equals("ENABLED") && !state.startsWith("DISABLED:") && !state.equals("DISABLED")) {
+            throw new RepositoryException("Illegal state: '" + state + "' only one of [ENABLED:<details>,DISABLED:<details>] is allowed");
         }
 
         /* delete the existing lifecyclestate and add the new one */
@@ -106,17 +119,10 @@ public class PlanLifecycleStates {
         final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
         final String planUri = subjects.getGraphSubject(plan.getNode()).getURI();
 
-        sparql.append("DELETE {<" + planUri +
-                "> <http://scapeproject.eu/model#hasLifecycleState> ?o} WHERE {<" + planUri +
-                "> <http://scapeproject.eu/model#hasLifecycleState> ?o} ;");
-        sparql.append("INSERT {<" + planUri +
-                "> <http://scapeproject.eu/model#hasLifecycleState> \"" +
-                state + "\"} WHERE {};");
-        final Model errors =
-                plan.updatePropertiesDataset(
-                        subjects,
-                        sparql.toString()).getNamedModel(
-                        GraphProperties.PROBLEMS_MODEL_NAME);
+        sparql.append("DELETE {<" + planUri + "> <http://scapeproject.eu/model#hasLifecycleState> ?o} WHERE {<" + planUri
+                + "> <http://scapeproject.eu/model#hasLifecycleState> ?o} ;");
+        sparql.append("INSERT {<" + planUri + "> <http://scapeproject.eu/model#hasLifecycleState> \"" + state + "\"} WHERE {};");
+        final Model errors = plan.updatePropertiesDataset(subjects, sparql.toString()).getNamedModel(GraphProperties.PROBLEMS_MODEL_NAME);
         // TODO: check for errors
 
         this.session.save();

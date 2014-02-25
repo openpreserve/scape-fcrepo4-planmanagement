@@ -25,17 +25,25 @@ import javax.ws.rs.core.Response;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-
 /**
  * JAX-RS Resource for Plan Identifiers
- *
+ * 
  * @author frank asseg
- *
+ * 
  */
 @Component
 @Scope("prototype")
 @Path("/scape/plan-id/reserve")
 public class PlanIdentifiers {
+    /**
+     * Exposes a HTTP end point to reserve a plan id in fedora. In the current
+     * implementation plan UUID's are used to mock a reservation mechanism
+     * 
+     * @return a {@link Response} which maps to a corresponding HTTP response,
+     *         containing the generated id
+     * @throws RepositoryException
+     *             if an error occurred while generating the id
+     */
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     public Response reservePlanIdentifier() throws RepositoryException {

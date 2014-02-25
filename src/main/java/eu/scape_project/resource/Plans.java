@@ -63,9 +63,9 @@ import eu.scape_project.model.plan.PlanLifecycleState;
 
 /**
  * JAX-RS Resource for Plans
- *
+ * 
  * @author frank asseg
- *
+ * 
  */
 @Component
 @Scope("prototype")
@@ -86,17 +86,33 @@ public class Plans {
     @Autowired
     private DatastreamService datastreamService;
 
+    /**
+     * Deploy a new Plan in Fedora
+     * 
+     * @param planId
+     *            the id of the plan to deploy
+     * @param uriInfo
+     *            the {@link UriInfo} injected by JAX-RS to have the context
+     *            path available
+     * @param src
+     *            the plan's XML representation
+     * @return a {@link Response} which maps to a corresponding HTTP response
+     * @throws RepositoryException
+     *             if an error occurred while adding the plan to Fedora
+     * @throws IOException
+     *             if an error occurred while reading the plan data
+     * @throws InvalidChecksumException
+     *             if an invalid checksum check occurred
+     */
     @PUT
     @Path("{id}")
     public Response deployPlan(@PathParam("id")
     final String planId, @Context
-    UriInfo uriInfo, final InputStream src) throws RepositoryException,
-            IOException, InvalidChecksumException {
+    UriInfo uriInfo, final InputStream src) throws RepositoryException, IOException, InvalidChecksumException {
 
         /* create a top level object for the plan */
         final String path = PLAN_FOLDER + planId;
-        final FedoraObject plan =
-                objectService.createObject(this.session, path);
+        final FedoraObject plan = objectService.createObject(this.session, path);
         plan.getNode().addMixin("scape:plan");
 
         /*
@@ -114,61 +130,44 @@ public class Plans {
         final String planUri = subjects.getGraphSubject(plan.getNode()).getURI();
 
         /* add the exec state to the parent */
-        sparql.append("INSERT {<" + planUri +
-                "> <http://scapeproject.eu/model#hasType> \"PLAN\"} WHERE {};");
+        sparql.append("INSERT {<" + planUri + "> <http://scapeproject.eu/model#hasType> \"PLAN\"} WHERE {};");
         if (planData.getTitle() != null) {
-            sparql.append("INSERT {<" + planUri +
-                    "> <http://scapeproject.eu/model#hasTitle> \"" +
-                    planData.getTitle() + "\"} WHERE {};");
+            sparql.append("INSERT {<" + planUri + "> <http://scapeproject.eu/model#hasTitle> \"" + planData.getTitle() + "\"} WHERE {};");
         }
         if (planData.getIdentifier() != null) {
-            sparql.append("INSERT {<" + planUri +
-                    "> <http://scapeproject.eu/model#hasIdentifier> \"" +
-                    planData.getIdentifier().getType() + ":" + planData.getIdentifier().getValue() + "\"} WHERE {};");
+            sparql.append("INSERT {<" + planUri + "> <http://scapeproject.eu/model#hasIdentifier> \"" + planData.getIdentifier().getType() + ":"
+                    + planData.getIdentifier().getValue() + "\"} WHERE {};");
         }
         if (planData.getDescription() != null) {
-            sparql.append("INSERT {<" + planUri +
-                    "> <http://scapeproject.eu/model#hasDescription> \"" +
-                    planData.getDescription() + "\"} WHERE {};");
+            sparql.append("INSERT {<" + planUri + "> <http://scapeproject.eu/model#hasDescription> \"" + planData.getDescription() + "\"} WHERE {};");
         }
         if (planData.getLifecycleState() != null) {
-            sparql.append("INSERT {<" + planUri +
-                    "> <http://scapeproject.eu/model#hasLifecycleState> \"" +
-                    planData.getLifecycleState().getState() + ":" +
-                    planData.getLifecycleState().getDetails() + "\"} WHERE {};");
+            sparql.append("INSERT {<" + planUri + "> <http://scapeproject.eu/model#hasLifecycleState> \"" + planData.getLifecycleState().getState() + ":"
+                    + planData.getLifecycleState().getDetails() + "\"} WHERE {};");
         } else {
-            sparql.append("INSERT {<" + planUri +
-                    "> <http://scapeproject.eu/model#hasLifecycleState> \"ENABLED:Initial creation\"} WHERE {};");
+            sparql.append("INSERT {<" + planUri + "> <http://scapeproject.eu/model#hasLifecycleState> \"ENABLED:Initial creation\"} WHERE {};");
         }
         if (planData.getExecutionStates() != null) {
             for (PlanExecutionState state : planData.getExecutionStates()) {
-                sparql.append("INSERT {<" + planUri +
-                        "> <http://scapeproject.eu/model#hasPlanExecutionState> \"" +
-                        state.getState() + ":" + state.getTimeStamp() +
-                        "\"} WHERE {};");
+                sparql.append("INSERT {<" + planUri + "> <http://scapeproject.eu/model#hasPlanExecutionState> \"" + state.getState() + ":"
+                        + state.getTimeStamp() + "\"} WHERE {};");
             }
         }
 
         /* execute the sparql update */
-        final Dataset update = plan.updatePropertiesDataset(subjects,
-                sparql.toString());
+        final Dataset update = plan.updatePropertiesDataset(subjects, sparql.toString());
 
-        final Model problems =
-                update.getNamedModel(GraphProperties.PROBLEMS_MODEL_NAME);
+        final Model problems = update.getNamedModel(GraphProperties.PROBLEMS_MODEL_NAME);
 
-        //TODO: check the problems and throw an error if applicable
+        // TODO: check the problems and throw an error if applicable
 
         /* add a datastream holding the plato XML data */
-        final Node ds =
-                datastreamService.createDatastreamNode(this.session, path +
-                        "/plato-xml", "text/xml", null,  new ByteArrayInputStream(sink
-                        .toByteArray()));
+        final Node ds = datastreamService.createDatastreamNode(this.session, path + "/plato-xml", "text/xml", null,
+                new ByteArrayInputStream(sink.toByteArray()));
 
         /* and persist the changes in fcrepo */
         this.session.save();
-        return Response.created(uriInfo.getAbsolutePath()).entity(
-                uriInfo.getAbsolutePath().toASCIIString()).header(
-                "Content-Type", "text/plain").build();
+        return Response.created(uriInfo.getAbsolutePath()).entity(uriInfo.getAbsolutePath().toASCIIString()).header("Content-Type", "text/plain").build();
     }
 
     private PlanData createDeploymentPlanData(InputStream src) throws IOException {
@@ -189,20 +188,35 @@ public class Plans {
         }
     }
 
+    /**
+     * Retrieve a plan's XML representation stored in Fedora
+     * 
+     * @param planId
+     *            the id of the plan
+     * @return a {@link Response} which maps to a corresponding HTTP response,
+     *         containing the plan as an XML document
+     * @throws RepositoryException
+     *             if an error occurred while fetching the plan from Fedora
+     */
     @GET
     @Path("{id}")
     public Response retrievePlan(@PathParam("id")
     final String planId) throws RepositoryException {
         /* fetch the plan form the repository */
-        final Datastream ds =
-                this.datastreamService.getDatastream(this.session, PLAN_FOLDER +
-                        planId + "/plato-xml");
+        final Datastream ds = this.datastreamService.getDatastream(this.session, PLAN_FOLDER + planId + "/plato-xml");
         return Response.ok(ds.getContent(), ds.getMimeType()).build();
     }
 
+    /**
+     * Delete a plan from Fedora
+     * @param planId the plan's id
+     * @return a {@link Response} which maps to a corresponding HTTP response
+     * @throws RepositoryException if an error occurred while deleting the plan
+     */
     @DELETE
     @Path("{id}")
-    public Response deletePlan(@PathParam("id") final String planId) throws RepositoryException {
+    public Response deletePlan(@PathParam("id")
+    final String planId) throws RepositoryException {
         final String path = "/" + PLAN_FOLDER + planId;
         this.nodeService.deleteObject(this.session, path);
         this.session.save();

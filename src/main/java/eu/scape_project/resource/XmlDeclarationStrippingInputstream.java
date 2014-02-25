@@ -17,18 +17,25 @@ package eu.scape_project.resource;
 import java.io.IOException;
 import java.io.InputStream;
 
-
 /**
+ * An {@link InputStream} implementation which strips the leading XML
+ * Declaration of a XML document If the xml document starts with
+ * <code><?xml...?></code>, the implementation will skip these bytes and start
+ * streaming directly after the XML declaration
+ * 
  * @author frank asseg
- *
+ * 
  */
 public class XmlDeclarationStrippingInputstream extends InputStream {
 
     final InputStream src;
 
     String firstElement;
+
     boolean checked = false;
+
     boolean hasDeclaration = false;
+
     int elementIndex;
 
     public XmlDeclarationStrippingInputstream(InputStream src) {
@@ -50,7 +57,7 @@ public class XmlDeclarationStrippingInputstream extends InputStream {
             }
             if ((char) b == '<') {
                 name.append((char) b);
-                while ((b=src.read()) != -1 && (char) b != '>') {
+                while ((b = src.read()) != -1 && (char) b != '>') {
                     name.append((char) b);
                 }
                 name.append((char) b);

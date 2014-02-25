@@ -90,6 +90,13 @@ public class PlanExecutionStates {
         this.marshaller = ScapeMarshaller.newInstance();
     }
 
+    /**
+     * Exposes a HTTP end point to retrieve the {@link PlanExecutionState} of a Plan stored in Fedora
+     * @param planId the id of the plan
+     * @param uriInfo the {@link UriInfo} injected by JAX-RS to have the context paths available
+     * @return a {@link Response} containing the {@link PlanExecutionState}'s XML representation
+     * @throws RepositoryException if an error occurred while retrieving the {@link PlanExecutionState}
+     */
     @GET
     @Path("{id}")
     public Response retrievePlanExecutionState(@PathParam("id")

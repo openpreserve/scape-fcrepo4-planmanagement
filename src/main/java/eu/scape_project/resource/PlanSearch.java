@@ -48,9 +48,9 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 /**
  * JAX-RS Resource for Plan search
- *
+ * 
  * @author frank asseg
- *
+ * 
  */
 @Component
 @Scope("prototype")
@@ -66,6 +66,27 @@ public class PlanSearch {
     @Autowired
     private NodeService nodeService;
 
+    /**
+     * Search for plans in Fedora
+     * 
+     * @param operation
+     *            the operation for the SRU request. Currently only
+     *            <code>searchAndRetrieve</code> is supported
+     * @param query
+     *            the query for the SRU requets. Currently only a term query is
+     *            supported
+     * @param version
+     *            the version of the SRU request. Currently only version
+     *            <code>1</code> is supported
+     * @param offset
+     *            the offet of the results
+     * @param limit
+     *            the maximum amount of results
+     * @return a {@link Response} which maps to a corresponding HTTP response,
+     *         containing a SRU searchAndRetreive XML result document
+     * @throws RepositoryException
+     *             if an error occurred while searching for plans in Fedora
+     */
     @GET
     @Produces(MediaType.TEXT_XML)
     public Response searchPlans(@QueryParam("operation")
@@ -76,19 +97,9 @@ public class PlanSearch {
     @DefaultValue("25")
     final int limit) throws RepositoryException {
 
-        final Model model =
-                this.nodeService
-                        .searchRepository(
-                                new DefaultGraphSubjects(this.session),
-                                ResourceFactory
-                                        .createResource("info:fedora/objects/scape/plans"),
-                                this.session, query, limit, 0)
-                        .getDefaultModel();
-        final StmtIterator it =
-                model.listStatements(
-                        null,
-                        model.createProperty("http://scapeproject.eu/model#hasType"),
-                        "PLAN");
+        final Model model = this.nodeService.searchRepository(new DefaultGraphSubjects(this.session),
+                ResourceFactory.createResource("info:fedora/objects/scape/plans"), this.session, query, limit, 0).getDefaultModel();
+        final StmtIterator it = model.listStatements(null, model.createProperty("http://scapeproject.eu/model#hasType"), "PLAN");
         final List<String> uris = new ArrayList<>();
         while (it.hasNext()) {
             final String uri = it.next().getSubject().getURI();
@@ -103,8 +114,7 @@ public class PlanSearch {
         StreamingOutput entity = new StreamingOutput() {
 
             @Override
-            public void write(OutputStream output) throws IOException,
-                    WebApplicationException {
+            public void write(OutputStream output) throws IOException, WebApplicationException {
                 writeSRUHeader(output, uris.size());
                 for (String uri : uris) {
                     writeSRURecord(output, uri);
@@ -112,8 +122,7 @@ public class PlanSearch {
                 writeSRUFooter(output);
             }
 
-            private void writeSRURecord(OutputStream output, String uri)
-                    throws IOException {
+            private void writeSRURecord(OutputStream output, String uri) throws IOException {
                 try {
                     final StringBuilder sru = new StringBuilder();
                     final String planId = uri.substring((RdfLexicon.RESTAPI_NAMESPACE + Plans.PLAN_FOLDER).length() + 1);
@@ -121,15 +130,11 @@ public class PlanSearch {
                     sru.append("<srw:recordPacking>string</srw:recordPacking>");
                     sru.append("<srw:recordSchema>http://scapeproject.eu/schema/plato</srw:recordSchema>");
                     sru.append("<srw:extraRecordData>");
-                    sru.append("<planId>")
-                        .append(planId)
-                        .append("</planId>");
+                    sru.append("<planId>").append(planId).append("</planId>");
                     sru.append("</srw:extraRecordData>");
                     sru.append("<srw:recordData>");
                     output.write(sru.toString().getBytes());
-                    final Datastream plato =
-                            datastreamService.getDatastream(session, uri.substring(uri.indexOf('/')) +
-                                    "/plato-xml");
+                    final Datastream plato = datastreamService.getDatastream(session, uri.substring(uri.indexOf('/')) + "/plato-xml");
                     IOUtils.copy(new XmlDeclarationStrippingInputstream(plato.getContent()), output);
                     sru.setLength(0);
                     sru.append("</srw:recordData>");
@@ -147,13 +152,11 @@ public class PlanSearch {
                 output.write(sru.toString().getBytes());
             }
 
-            private void writeSRUHeader(OutputStream output, int size)
-                    throws IOException {
+            private void writeSRUHeader(OutputStream output, int size) throws IOException {
                 final StringBuilder sru = new StringBuilder();
                 sru.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
                 sru.append("<srw:searchRetrieveResponse xmlns:srw=\"http://scapeproject.eu/srw/\">");
-                sru.append("<srw:numberOfRecords>" + size +
-                        "</srw:numberOfRecords>");
+                sru.append("<srw:numberOfRecords>" + size + "</srw:numberOfRecords>");
                 sru.append("<srw:records>");
                 output.write(sru.toString().getBytes("UTF-8"));
             }
