@@ -8,6 +8,74 @@ Prepackaged WAR
 ---------------
 A prepackaged Fedora 4 WAR file which includes the SCAPE Connector API and the SCAPE Plan Management API is available at https://drive.google.com/file/d/0B5nd_qlYdcqyYWwwVE9rRW9FZEk/edit?usp=sharing
 
+API Examples
+------------
+Examples
+--------
+More examples can be found in the integration tests at https://github.com/openplanets/scape-fcrepo4-planmanagement/blob/master/src/test/java/eu/scapeproject/fcrepo/integration/PlanIT.java 
+
+
+#### Retrieve a list of deployed Plans:
+
+```bash
+$ curl -X GET http://localhost:8080/fcrepo/rest/scape/plan-list
+```
+
+
+#### Reserve a Plan identifier:
+
+```bash
+$ curl -X GET http://localhost:8080/fcrepo/rest/scape/plan-id/reserve
+```
+
+
+#### Deploy a new Plan:
+
+```bash
+$ curl -X PUT http://localhost:8080/fcrepo/rest/scape/plan/MyPlan -d @/path/to/plato-plan.xml
+```
+
+
+#### Search deployed Plans:
+
+```bash
+$ curl -X GET http://localhost:8080/fcrepo/rest/scape/plan/sru?version=1&operation=searchRetrieve&query=*
+```
+
+
+#### Retrieve a Plan:
+
+```bash
+$ curl -X GET http://localhost:8080/fcrepo/rest/scape/plan/MyPlan
+```
+
+
+#### Retrieve Plan life cycle state:
+
+```bash
+$ curl -X GET  http://localhost:8080/fcrepo/rest/scape/plan-state/MyPlan
+```
+
+
+#### Update Plan life cycle state (disabling the Plan):
+
+```bash
+$ curl -X PUT  http://localhost:8080/fcrepo/rest/scape/plan-state/MyPlan/DISABLED
+```
+
+
+#### Retrieve Plan execution state
+ 
+```bash
+$ curl -X GET http://localhost:8080/fcrepo/rest/scape/plan-execution-state/MyPlan
+```
+
+
+#### Add a new Plan execution state:
+
+```bash
+$ curl -X POST http://localhost:8080/fcrepo/rest/scape/plan-exceution-state/MyPlan -d @/path/to/executionstate
+```
 
 
 Manual Installation
