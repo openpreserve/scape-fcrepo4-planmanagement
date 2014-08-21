@@ -9,12 +9,12 @@
   <bean class="org.fcrepo.http.commons.session.SessionFactory"/>
 
   <!-- Mints PIDs-->
-  <bean class="org.fcrepo.kernel.identifiers.UUIDPidMinter"/>
+  <bean class="org.fcrepo.kernel.impl.identifiers.UUIDPidMinter"/>
   
   <context:annotation-config/>
 
   <context:component-scan
-    base-package="org.fcrepo.kernel.services, org.fcrepo.http, org.fcrepo.api, org.fcrepo.serialization, org.fcrepo.responses, org.fcrepo.exceptionhandlers, org.fcrepo.url"/>
+          base-package="eu.scape_project.web.listener, eu.scape_project.resource, org.fcrepo.kernel.impl.services, org.fcrepo.http,org.fcrepo.transform.http, org.fcrepo.api, org.fcrepo.serialization, org.fcrepo.responses, org.fcrepo.exceptionhandlers, org.fcrepo.url"/>
 
   <util:map id="serializers" key-type="java.lang.String" map-class="java.util.HashMap"
     value-type="org.fcrepo.serialization.FedoraObjectSerializer">

@@ -59,6 +59,11 @@
   <dependencies>
     <dependency>
       <groupId>org.fcrepo</groupId>
+      <artifactId>fcrepo-auth-common</artifactId>
+      <version>${fcrepo.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.fcrepo</groupId>
       <artifactId>fcrepo-kernel</artifactId>
       <version>${fcrepo.version}</version>
     </dependency>

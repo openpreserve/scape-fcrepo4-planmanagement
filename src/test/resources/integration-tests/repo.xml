@@ -11,10 +11,16 @@
     <context:annotation-config/>
 
     <bean name="modeshapeRepofactory"
-          class="org.fcrepo.kernel.spring.ModeShapeRepositoryFactoryBean">
+          class="org.fcrepo.kernel.impl.spring.ModeShapeRepositoryFactoryBean">
       <property name="repositoryConfiguration" value="integration-tests/test_repository.json"/>
     </bean>
 
     <bean class="org.modeshape.jcr.JcrRepositoryFactory"/>
+
+    <bean id="connectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager" />
+
+    <bean name="fedoraEventMapper" class="org.fcrepo.kernel.impl.observer.eventmappings.AllNodeEventsOneEvent"/>
+
+    <bean name="fcrepoAuthProvider" class="org.fcrepo.auth.common.BypassSecurityServletAuthenticationProvider" />
 
 </beans>
