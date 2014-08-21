@@ -63,10 +63,10 @@ public class PlanIT {
     private static final String PORT = (System.getProperty("test.port") != null) ? System.getProperty("test.port") : "8092";
 
     private static final String SCAPE_URL = "http://localhost:" + PORT +
-            "/rest/scape";
+            "/scape";
 
     private static final String FEDORA_URL = "http://localhost:" + PORT +
-            "/rest/";
+            "/";
 
     private final DefaultHttpClient client = new DefaultHttpClient();
 
@@ -88,14 +88,6 @@ public class PlanIT {
                         "plato-plan.xml").getFile());
 
         putPlanAndAssertCreated(planId, new FileInputStream(f), f.length());
-
-        /* check that the plan exists in fedora */
-        HttpGet get =
-                new HttpGet(FEDORA_URL + "/objects/scape/plans/" + planId);
-        HttpResponse resp = this.client.execute(get);
-        assertEquals(200, resp.getStatusLine().getStatusCode());
-        get.releaseConnection();
-
     }
 
     @Test
