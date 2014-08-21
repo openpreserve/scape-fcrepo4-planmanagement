@@ -35,9 +35,11 @@ import org.apache.commons.io.IOUtils;
 import org.fcrepo.http.commons.session.InjectedSession;
 import org.fcrepo.kernel.Datastream;
 import org.fcrepo.kernel.RdfLexicon;
-import org.fcrepo.kernel.rdf.impl.DefaultGraphSubjects;
+import org.fcrepo.kernel.impl.rdf.impl.DefaultIdentifierTranslator;
+import org.fcrepo.kernel.rdf.IdentifierTranslator;
 import org.fcrepo.kernel.services.DatastreamService;
 import org.fcrepo.kernel.services.NodeService;
+import org.fcrepo.kernel.services.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -65,6 +67,10 @@ public class PlanSearch {
 
     @Autowired
     private NodeService nodeService;
+
+    @Autowired
+    private RepositoryService repositoryService;
+
 
     /**
      * Search for plans in Fedora
@@ -97,8 +103,10 @@ public class PlanSearch {
     @DefaultValue("25")
     final int limit) throws RepositoryException {
 
-        final Model model = this.nodeService.searchRepository(new DefaultGraphSubjects(this.session),
-                ResourceFactory.createResource("info:fedora/objects/scape/plans"), this.session, query, limit, 0).getDefaultModel();
+        final IdentifierTranslator subjects = new DefaultIdentifierTranslator(); 
+        final Model model = this.repositoryService.searchRepository(subjects, ResourceFactory.createResource("info:fedora/objects/scape/plans"),
+                this.session, query, limit, 0)
+                .getDefaultModel();
         final StmtIterator it = model.listStatements(null, model.createProperty("http://scapeproject.eu/model#hasType"), "PLAN");
         final List<String> uris = new ArrayList<>();
         while (it.hasNext()) {

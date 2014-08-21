@@ -37,14 +37,16 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import eu.scape_project.model.Identifier;
 import org.apache.commons.io.IOUtils;
 import org.fcrepo.http.commons.session.InjectedSession;
 import org.fcrepo.kernel.Datastream;
 import org.fcrepo.kernel.FedoraObject;
 import org.fcrepo.kernel.RdfLexicon;
 import org.fcrepo.kernel.exception.InvalidChecksumException;
+import org.fcrepo.kernel.impl.rdf.impl.DefaultIdentifierTranslator;
 import org.fcrepo.kernel.rdf.GraphProperties;
-import org.fcrepo.kernel.rdf.impl.DefaultGraphSubjects;
+import org.fcrepo.kernel.rdf.IdentifierTranslator;
 import org.fcrepo.kernel.services.DatastreamService;
 import org.fcrepo.kernel.services.NodeService;
 import org.fcrepo.kernel.services.ObjectService;
@@ -126,8 +128,8 @@ public class Plans {
         /* add the properties to the RDF graph of the exec state object */
         StringBuilder sparql = new StringBuilder();
 
-        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
-        final String planUri = subjects.getGraphSubject(plan.getNode()).getURI();
+        final IdentifierTranslator subjects = new DefaultIdentifierTranslator();
+        final String planUri = subjects.getSubject(plan.getNode().getPath()).getURI();
 
         /* add the exec state to the parent */
         sparql.append("INSERT {<" + planUri + "> <http://scapeproject.eu/model#hasType> \"PLAN\"} WHERE {};");
@@ -162,7 +164,7 @@ public class Plans {
         // TODO: check the problems and throw an error if applicable
 
         /* add a datastream holding the plato XML data */
-        final Node ds = datastreamService.createDatastreamNode(this.session, path + "/plato-xml", "text/xml", null,
+        final Datastream ds = datastreamService.createDatastream(this.session, path + "/plato-xml", "text/xml", null,
                 new ByteArrayInputStream(sink.toByteArray()));
 
         /* and persist the changes in fcrepo */

@@ -14,8 +14,6 @@
 
 package eu.scape_project.resource;
 
-import java.io.IOException;
-
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.ws.rs.GET;
@@ -30,10 +28,10 @@ import javax.xml.bind.JAXBException;
 
 import org.fcrepo.http.commons.session.InjectedSession;
 import org.fcrepo.kernel.FedoraObject;
-import org.fcrepo.kernel.RdfLexicon;
+import org.fcrepo.kernel.impl.rdf.SerializationUtils;
+import org.fcrepo.kernel.impl.rdf.impl.DefaultIdentifierTranslator;
 import org.fcrepo.kernel.rdf.GraphProperties;
-import org.fcrepo.kernel.rdf.SerializationUtils;
-import org.fcrepo.kernel.rdf.impl.DefaultGraphSubjects;
+import org.fcrepo.kernel.rdf.IdentifierTranslator;
 import org.fcrepo.kernel.services.ObjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -83,12 +81,11 @@ public class PlanLifecycleStates {
         final FedoraObject plan = this.objectService.getObject(this.session, planUri);
 
         /* get the relevant information from the RDF dataset */
-        final Dataset data = plan.getPropertiesDataset(new DefaultGraphSubjects(this.session));
+        final IdentifierTranslator subjects = new DefaultIdentifierTranslator();        final Dataset data = plan.getPropertiesDataset(subjects);
         final Model rdfModel = SerializationUtils.unifyDatasetModel(data);
-        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
 
         final String lifecycle = rdfModel
-                .listStatements(subjects.getGraphSubject(plan.getNode()), rdfModel.getProperty("http://scapeproject.eu/model#hasLifecycleState"),
+                .listStatements(subjects.getSubject(plan.getNode().getPath()), rdfModel.getProperty("http://scapeproject.eu/model#hasLifecycleState"),
                         (RDFNode) null).next().getObject().asLiteral().getString();
         return Response.ok(lifecycle, MediaType.TEXT_PLAIN).build();
     }
@@ -116,8 +113,8 @@ public class PlanLifecycleStates {
 
         /* delete the existing lifecyclestate and add the new one */
         StringBuilder sparql = new StringBuilder();
-        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
-        final String planUri = subjects.getGraphSubject(plan.getNode()).getURI();
+        final IdentifierTranslator subjects = new DefaultIdentifierTranslator();
+        final String planUri = subjects.getSubject(plan.getNode().getPath()).getURI();
 
         sparql.append("DELETE {<" + planUri + "> <http://scapeproject.eu/model#hasLifecycleState> ?o} WHERE {<" + planUri
                 + "> <http://scapeproject.eu/model#hasLifecycleState> ?o} ;");

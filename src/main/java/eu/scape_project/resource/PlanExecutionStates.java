@@ -18,19 +18,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -39,9 +31,9 @@ import javax.xml.bind.JAXBException;
 
 import org.fcrepo.http.commons.session.InjectedSession;
 import org.fcrepo.kernel.FedoraObject;
-import org.fcrepo.kernel.RdfLexicon;
-import org.fcrepo.kernel.rdf.SerializationUtils;
-import org.fcrepo.kernel.rdf.impl.DefaultGraphSubjects;
+import org.fcrepo.kernel.impl.rdf.SerializationUtils;
+import org.fcrepo.kernel.impl.rdf.impl.DefaultIdentifierTranslator;
+import org.fcrepo.kernel.rdf.IdentifierTranslator;
 import org.fcrepo.kernel.services.DatastreamService;
 import org.fcrepo.kernel.services.NodeService;
 import org.fcrepo.kernel.services.ObjectService;
@@ -108,12 +100,12 @@ public class PlanExecutionStates {
                 this.objectService.getObject(this.session, planUri);
 
         /* get the relevant information from the RDF dataset */
-        final Dataset data = plan.getPropertiesDataset(new DefaultGraphSubjects(this.session));
+        final IdentifierTranslator subjects = new DefaultIdentifierTranslator();
+        final Dataset data = plan.getPropertiesDataset(subjects);
         final Model rdfModel = SerializationUtils.unifyDatasetModel(data);
-        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
         final StmtIterator execs =
                 rdfModel.listStatements(
-                		subjects.getGraphSubject(plan.getNode()),
+                		subjects.getSubject(plan.getNode().getPath()),
                         rdfModel.getProperty("http://scapeproject.eu/model#hasExecState"),
                         (RDFNode) null);
         /* create the response from the data saved in fcrepo */
@@ -165,9 +157,9 @@ public class PlanExecutionStates {
                 this.objectService.getObject(this.session, planPath);
 
         final FedoraObject execState = this.objectService.createObject(this.session, planPath + "/" + UUID.randomUUID());
-        final DefaultGraphSubjects subjects = new DefaultGraphSubjects(this.session);
-        final String execStateUri = subjects.getGraphSubject(execState.getNode()).getURI();
-        final String planUri = subjects.getGraphSubject(plan.getNode()).getURI();
+        final IdentifierTranslator subjects = new DefaultIdentifierTranslator();
+        final String execStateUri = subjects.getSubject(execState.getNode().getPath()).getURI();
+        final String planUri = subjects.getSubject(plan.getNode().getPath()).getURI();
         
         StringBuilder sparql = new StringBuilder();
         sparql.append("INSERT {<" + execStateUri +

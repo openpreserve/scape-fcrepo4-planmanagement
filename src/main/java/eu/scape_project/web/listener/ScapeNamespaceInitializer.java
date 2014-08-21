@@ -27,7 +27,9 @@ import javax.ws.rs.ext.Provider;
 
 import org.fcrepo.http.commons.session.SessionFactory;
 import org.fcrepo.kernel.RdfLexicon;
+import org.fcrepo.kernel.impl.rdf.impl.DefaultIdentifierTranslator;
 import org.fcrepo.kernel.services.NodeService;
+import org.fcrepo.kernel.services.RepositoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +57,9 @@ public class ScapeNamespaceInitializer implements AbstractResourceModelListener 
     private NodeService nodeService;
 
     @Autowired
+    private RepositoryService repositoryService;
+
+    @Autowired
     private SessionFactory sessionFactory;
 
     /* (non-Javadoc)
@@ -66,7 +71,7 @@ public class ScapeNamespaceInitializer implements AbstractResourceModelListener 
             final Session session= this.sessionFactory.getInternalSession();
             /* make sure that the scape namespace is available in fcrepo */
             final Dataset namespace =
-                    this.nodeService.getNamespaceRegistryDataset(session);
+                    this.repositoryService.getNamespaceRegistryDataset(session, new DefaultIdentifierTranslator());
             UpdateAction.parseExecute(
                     "INSERT {<http://scapeproject.eu/model#> <" +
                             RdfLexicon.HAS_NAMESPACE_PREFIX + "> \"scape\"} WHERE {}",
