@@ -14,7 +14,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <fcrepo.version>4.0.0-beta-02-SNAPSHOT</fcrepo.version>
+        <fcrepo.version>4.0.0-beta-02</fcrepo.version>
 		<spring.version>3.2.2.RELEASE</spring.version>
 	    <test.port>8092</test.port>
   </properties>
@@ -35,7 +35,7 @@
       <repositories>
         <repository>
           <id>sonatypesnapshots</id>
-          <url>http://oss.sonatype.org/content/repositories/snapshots/</url>
+          <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
           <layout>default</layout>
           <snapshots>
             <enabled>true</enabled>
@@ -253,6 +253,13 @@
           <source>1.7</source>
           <target>1.7</target>
         </configuration>
+      </plugin>
+	  <!-- required for .bundle files, see: http://grails.1312388.n4.nabble.com/Grails-Maven-plugin-looking-for-quot-bundle-quot-on-OSGI-bundle-artifacts-td4641283.html -->
+	  <plugin>
+		<groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>1.4.3</version>
+        <extensions>true</extensions>
       </plugin>
     </plugins>
   </build>
